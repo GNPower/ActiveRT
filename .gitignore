@@ -1,0 +1,136 @@
+################################################################################
+# .gitignore for ActiveRT C Library
+################################################################################
+
+# ---- Build directories ----
+build/
+out/
+_build/
+cmake-build-*/
+
+# ---- CMake generated files ----
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+_deps/
+
+# ---- CMake user presets (machine-local overrides) ----
+CMakeUserPresets.json
+
+# ---- Compiled object files and libraries ----
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.pdb
+*.exp
+
+# ---- Executables ----
+*.exe
+*.out
+
+# ---- Doxygen output ----
+doxydoc/
+docs/xml/
+docs/html/
+docs/_build/
+docs/doxygen_output/
+
+# ---- Python / Sphinx ----
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+env/
+.env/
+*.egg-info/
+dist/
+*.egg
+
+# ---- IDEs ----
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (CLion, etc.)
+.idea/
+*.iml
+cmake-build-debug/
+cmake-build-release/
+
+# Keil MDK / uVision
+*.uvprojx
+*.uvoptx
+*.uvguix
+*.dbgconf
+*.lst
+*.map
+*.axf
+*.htm
+RTE/
+
+# IAR
+*.ewp
+*.eww
+*.ewt
+*.ewd
+Debug/
+Release/
+
+# Eclipse CDT
+.cproject
+.project
+.settings/
+
+# Visual Studio
+*.user
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+x64/
+x86/
+.vs/
+
+# ---- OS generated files ----
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.nfs*
+
+# ---- Static analysis output ----
+*.plist
+compile_commands.json.bak
+
+# ---- Coverage reports ----
+*.gcno
+*.gcda
+*.gcov
+coverage/
+lcov.info
