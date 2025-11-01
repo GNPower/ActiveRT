@@ -1,0 +1,44 @@
+---
+# ActiveRT clang-tidy configuration
+# Checks appropriate for an embedded C library.
+# Run against src/ only (not FreeRTOS headers or test stubs).
+#
+# Usage:
+#   clang-tidy -p build/host-test src/activert_active.c
+#   find src -name "*.c" | xargs clang-tidy -p build/host-test
+
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  readability-*,
+  portability-*,
+  -bugprone-reserved-identifier,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-function-cognitive-complexity,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+
+# Only analyse C source files (not C++ headers or FreeRTOS internals)
+HeaderFileExtensions:          ['h']
+ImplementationFileExtensions:  ['c']
+
+# Suppress warnings from system/third-party headers
+HeaderFilterRegex: '^((?!FreeRTOS|freertos|portable|unity).)*$'
+
+CheckOptions:
+  - key:   readability-function-size.StatementThreshold
+    value: '80'
+  - key:   readability-function-size.LineThreshold
+    value: '150'
+  - key:   readability-function-size.ParameterThreshold
+    value: '8'
+  - key:   readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key:   readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key:   readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+...

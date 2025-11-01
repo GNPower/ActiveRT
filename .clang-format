@@ -1,0 +1,66 @@
+---
+# ActiveRT clang-format configuration
+# Style: Allman braces, 4-space indent, 100-column limit
+# Suitable for embedded C following the project's existing conventions.
+Language:        C
+BasedOnStyle:    LLVM
+
+# Indentation
+IndentWidth:              4
+TabWidth:                 4
+UseTab:                   Never
+ContinuationIndentWidth:  4
+IndentCaseLabels:         true
+IndentGotoLabels:         true
+
+# Column limit
+ColumnLimit:              100
+
+# Braces — Allman style (opening brace on its own line)
+BreakBeforeBraces:        Allman
+AllowShortBlocksOnASingleLine:      Never
+AllowShortFunctionsOnASingleLine:   None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:        false
+
+# Pointers — align to the right (int *ptr)
+DerivePointerAlignment:   false
+PointerAlignment:         Right
+
+# Spacing
+SpaceAfterCStyleCast:         true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens:            ControlStatements
+SpaceInEmptyParentheses:      false
+SpacesInCStyleCastParentheses: false
+
+# Line breaking
+BinPackArguments:             false
+BinPackParameters:            false
+AllowAllArgumentsOnNextLine:  true
+AllowAllParametersOfDeclarationOnNextLine: true
+AlignAfterOpenBracket:        Align
+
+# Trailing commas
+InsertTrailingCommas:         None
+
+# Comments
+ReflowComments:               true
+SpacesBeforeTrailingComments: 2
+
+# Includes — preserve grouping but sort within groups
+SortIncludes:                 CaseSensitive
+IncludeBlocks:                Preserve
+
+# Alignment
+AlignConsecutiveAssignments:
+  Enabled:         true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignConsecutiveMacros:
+  Enabled:         true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignEscapedNewlines:    Left
+AlignTrailingComments:   true
+...

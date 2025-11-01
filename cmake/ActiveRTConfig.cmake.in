@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+# ActiveRTConfig.cmake
+# Allows downstream projects to use: find_package(ActiveRT CONFIG REQUIRED)
+#
+# Usage in embedded CMake project:
+#   find_package(ActiveRT CONFIG REQUIRED)
+#   target_link_libraries(my_target PRIVATE ActiveRT::activert)
+#
+# IMPORTANT: The ActiveRT library uses FreeRTOS APIs. You must ensure that
+# FreeRTOS headers (FreeRTOS.h, task.h, queue.h, semphr.h) are available in
+# your project's include path before including ActiveRT headers.
+
+include("${CMAKE_CURRENT_LIST_DIR}/ActiveRTTargets.cmake")
+
+check_required_components(ActiveRT)
