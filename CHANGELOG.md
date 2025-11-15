@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.2.0] — 2025-11-15
+
+### Added
+
+- Packed bit-per-slot bitmap for event pool allocation (replaced byte-per-slot)
+- Overflow policy enforcement: `ACTIVERT_POOL_OVERFLOW_DROP`, `ACTIVERT_POOL_OVERFLOW_ASSERT`, `ACTIVERT_POOL_OVERFLOW_DYNAMIC`
+- `activert_event_pool_init_static()` — fully static (zero-heap) pool initialisation
+
+---
+
 ## [0.1.0] — 2025-11-01
 
 ### Added
