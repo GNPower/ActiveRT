@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.3.0] — 2025-11-29
+
+### Added
+
+- ISR-safe event posting: `activert_active_post_from_isr`
+- ISR-safe event pool: `activert_event_pool_alloc_from_isr`, `activert_event_pool_free_from_isr`
+
+---
+
 ## [0.2.0] — 2025-11-15
 
 ### Added
