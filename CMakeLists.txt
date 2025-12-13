@@ -5,7 +5,6 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-# Version detection: reads VERSION file, falls back to `git describe --tags`
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/modules")
 include(GetVersion)
 get_version(ACTIVERT_VERSION)
@@ -31,14 +30,11 @@ set(ACTIVERT_SOURCES
     src/activert_active.c
     src/activert_event.c
     src/activert_post.c
+    src/activert_queue.c
 )
 
 ################################################################################
 # Installable static library target
-#
-# NOTE: This target does NOT link FreeRTOS because FreeRTOS is provided by the
-# embedding project's toolchain/BSP. The caller must supply FreeRTOS headers
-# in their include path.
 ################################################################################
 
 add_library(activert STATIC ${ACTIVERT_SOURCES})
@@ -58,7 +54,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 ################################################################################
-# Installation & CMake package config (for find_package support)
+# Installation & CMake package config
 ################################################################################
 
 include(GNUInstallDirs)

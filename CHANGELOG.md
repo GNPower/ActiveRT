@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.4.0] — 2025-12-13
+
+### Added
+
+- Multi-queue Active Objects with `QueueSetHandle_t` routing
+- `activert_queue_config_t` — per-queue signal base, signal count, depth, and pool
+- Queue management utilities: `activert_queue_get_depth`, `activert_queue_get_free_space`, `activert_queue_is_full`, `activert_queue_is_empty`, `activert_queue_flush`, `activert_queue_get_config`
+- Signal-based routing: events dispatched to queue matching `signal_base` + `signal_count` range
+
+---
+
 ## [0.3.0] — 2025-11-29
 
 ### Added
