@@ -5,13 +5,15 @@
 *   @brief      Master include — single header for all ActiveRT functionality
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    0.1.0
+*   @version    0.5.0
 *
 *   Revision History:
 *
 *   Ver     Who     Date        Changes
 *   -----   ----    ----------  -----------------------------------------------
 *   0.1.0   gnp     2025-11-01  Initial master include
+*   0.4.0   gnp     2025-12-13  Added activert_queue.h
+*   0.5.0   gnp     2025-12-27  Added activert_stats.h
 *
 *******************************************************************************/
 
@@ -33,6 +35,11 @@ extern "C" {
 
 /* Active Object API (includes posting functions) */
 #include "activert_active.h"
+
+/* Optional: Statistics API */
+#if ACTIVERT_ENABLE_STATS
+#include "activert_stats.h"
+#endif
 
 #ifdef __cplusplus
 }

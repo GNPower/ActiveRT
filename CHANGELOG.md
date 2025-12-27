@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5.0] — 2025-12-27
+
+### Added
+
+- Global statistics registry: `activert_stats_register_active`, `activert_stats_register_pool`
+- Per-AO statistics: events processed, events dropped, notifications received
+- Per-queue statistics: posts attempted/succeeded/failed, current depth, peak depth
+- Per-pool statistics: allocs attempted/succeeded/failed, current allocated, peak allocated
+- System-wide totals: `activert_stats_get_total_events_processed`, `get_total_events_dropped`, etc.
+- Report generation: `activert_stats_print_summary`, `print_all_actives`, `print_all_pools`, `print_full_report`
+- Queue statistics helpers: `activert_queue_get_utilization`, `activert_queue_get_peak_utilization`, `activert_queue_print_stats`
+
+---
+
 ## [0.4.0] — 2025-12-13
 
 ### Added

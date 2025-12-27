@@ -31,6 +31,7 @@ set(ACTIVERT_SOURCES
     src/activert_event.c
     src/activert_post.c
     src/activert_queue.c
+    src/activert_stats.c
 )
 
 ################################################################################
