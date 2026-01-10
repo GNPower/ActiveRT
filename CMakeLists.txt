@@ -32,6 +32,7 @@ set(ACTIVERT_SOURCES
     src/activert_post.c
     src/activert_queue.c
     src/activert_stats.c
+    src/activert_cli.c
 )
 
 ################################################################################

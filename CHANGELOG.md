@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.6.0] — 2026-01-10
+
+### Added
+
+- CLI command layer (`activert_cli`): `summary`, `list`, `show`, `pool`, `health`, `reset`, `perf`, `report`, `help`
+- Health check API (`activert_stats_health_check`) with `ACTIVERT_HEALTH_OK` / `WARNING` / `CRITICAL` levels
+- Warning thresholds: queue utilisation >80%, pool exhaustion, drop rate >5%, low stack
+- Critical thresholds: queue overflow, pool failure rate >50%, stack overflow risk
+- Performance profiling summary: `activert_stats_get_perf_summary`, `find_slowest_active`, `find_busiest_active`
+- Formatting helpers: `activert_cli_format_bytes`, `activert_cli_format_percent`
+
+---
+
 ## [0.5.0] — 2025-12-27
 
 ### Added

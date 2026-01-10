@@ -5,7 +5,7 @@
 *   @brief      Master include — single header for all ActiveRT functionality
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    0.5.0
+*   @version    0.6.0
 *
 *   Revision History:
 *
@@ -14,6 +14,7 @@
 *   0.1.0   gnp     2025-11-01  Initial master include
 *   0.4.0   gnp     2025-12-13  Added activert_queue.h
 *   0.5.0   gnp     2025-12-27  Added activert_stats.h
+*   0.6.0   gnp     2026-01-10  Added activert_cli.h (guarded by ACTIVERT_ENABLE_CLI)
 *
 *******************************************************************************/
 
@@ -35,6 +36,11 @@ extern "C" {
 
 /* Active Object API (includes posting functions) */
 #include "activert_active.h"
+
+/* Optional: CLI Commands */
+#if ACTIVERT_ENABLE_CLI
+#include "activert_cli.h"
+#endif
 
 /* Optional: Statistics API */
 #if ACTIVERT_ENABLE_STATS
