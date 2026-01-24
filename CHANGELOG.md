@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.7.0] — 2026-01-24
+
+### Added
+
+- Task notification support: semaphore-based and `xTaskNotify`-based hybrid modes
+- `activert_active_create_with_notification_static` — AO with queue + notification
+- `activert_active_notify` and `activert_active_notify_from_isr` — send notifications from task or ISR
+- `activert_notify_handler_t` callback type and `activert_notification_t` struct
+
+---
+
 ## [0.6.0] — 2026-01-10
 
 ### Added

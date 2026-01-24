@@ -33,6 +33,7 @@ set(ACTIVERT_SOURCES
     src/activert_queue.c
     src/activert_stats.c
     src/activert_cli.c
+    src/activert_notify.c
 )
 
 ################################################################################
