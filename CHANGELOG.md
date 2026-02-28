@@ -5,6 +5,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.0] — 2026-02-28
+
+### Added
+
+- Loop task variant (`activert_active_create_loop_static`, `ACTIVERT_ACTIVE_DEFINE_LOOP` / `ACTIVERT_ACTIVE_INIT_LOOP`)
+- Platform abstraction macros: `ACTIVERT_MALLOC`, `ACTIVERT_FREE`, `ACTIVERT_ENTER_CRITICAL`, `ACTIVERT_EXIT_CRITICAL`
+- `ACTIVERT_ENABLE_CLI` configuration guard (CLI guarded separately from stats)
+- FreeRTOS 10.x and 11.x compatibility (`StaticQueueSet_t` detected via version check)
+- `activert_active_stop()` — clean AO shutdown via `TERM_SIG`
+- `activert_active_get_stack_high_water()` — stack monitoring
+- Statistics reset API: `activert_stats_reset_active`, `activert_stats_reset_pool`, `activert_stats_reset_all`
+- Telemetry export: `activert_stats_export` / `activert_stats_get_export_size`
+- Real-time monitoring callbacks: `activert_stats_monitor_queue_depth`, `activert_stats_monitor_pool_exhaustion`, `activert_stats_monitor_stack_usage`
+- `is_static` flag and `activert_static_mem_t` tracking in Active Object struct
+- Version macros (`ACTIVERT_VERSION`, `ACTIVERT_VERSION_CHECK`) and convenience aliases (`activert_post`, `activert_notify`) in `activert.h`
+
+---
+
 ## [0.7.0] — 2026-01-24
 
 ### Added

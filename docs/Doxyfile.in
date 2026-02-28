@@ -1,0 +1,72 @@
+# Doxyfile.in — configured by CMake (substitute @VAR@ placeholders)
+# Doxygen configuration for ActiveRT
+
+PROJECT_NAME           = "ActiveRT"
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+PROJECT_BRIEF          = "Active Object real-time framework for FreeRTOS"
+OUTPUT_DIRECTORY       = "@DOXYGEN_OUTPUT_DIR@"
+
+#---------------------------------------------------------------------------
+# Input
+#---------------------------------------------------------------------------
+INPUT                  = "@CMAKE_SOURCE_DIR@/include" \
+                         "@CMAKE_SOURCE_DIR@/src"
+FILE_PATTERNS          = *.h *.c
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */build/* */_deps/* */test/*
+
+#---------------------------------------------------------------------------
+# Output formats
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+GENERATE_XML           = YES       # Required by Breathe (Sphinx bridge)
+XML_OUTPUT             = xml
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+
+#---------------------------------------------------------------------------
+# Extraction settings
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_ANON_NSPACES   = YES
+TYPEDEF_HIDES_STRUCT   = YES
+HIDE_UNDOC_MEMBERS     = NO
+
+#---------------------------------------------------------------------------
+# Preprocessing — expand macros so Doxygen sees the real types
+#---------------------------------------------------------------------------
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = ACTIVERT_ENABLE_STATS=1 \
+                         ACTIVERT_ENABLE_TIMING_STATS=1 \
+                         ACTIVERT_ENABLE_NAMES=1 \
+                         ACTIVERT_ENABLE_DEBUG=0 \
+                         ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1 \
+                         "ACTIVERT_ASSERT(x)=" \
+                         "__attribute__(x)="
+
+#---------------------------------------------------------------------------
+# Diagrams
+#---------------------------------------------------------------------------
+HAVE_DOT               = NO    # Set to YES locally if Graphviz is installed
+DOT_IMAGE_FORMAT       = svg
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+CLASS_GRAPH            = YES
+
+#---------------------------------------------------------------------------
+# Quality / warnings
+#---------------------------------------------------------------------------
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = NO
+
+#---------------------------------------------------------------------------
+# HTML appearance
+#---------------------------------------------------------------------------
+GENERATE_TREEVIEW      = YES
+HTML_DYNAMIC_SECTIONS  = YES

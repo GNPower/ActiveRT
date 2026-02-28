@@ -5,6 +5,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+# Version detection: reads VERSION file, falls back to `git describe --tags`
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/modules")
 include(GetVersion)
 get_version(ACTIVERT_VERSION)
@@ -19,25 +20,33 @@ project(ActiveRT
 # Options
 ################################################################################
 
+option(ACTIVERT_BUILD_TESTS
+    "Build host-side unit tests using the FreeRTOS POSIX simulator" ON)
 option(ACTIVERT_BUILD_DOCS
     "Build Doxygen + Sphinx documentation" OFF)
 
 ################################################################################
 # Library source files
+# activert_tests.c is excluded — it contains hardware-specific Xilinx tests.
+# It is compiled separately in the test/ subdirectory for embedded builds.
 ################################################################################
 
 set(ACTIVERT_SOURCES
     src/activert_active.c
     src/activert_event.c
-    src/activert_post.c
-    src/activert_queue.c
     src/activert_stats.c
     src/activert_cli.c
+    src/activert_queue.c
+    src/activert_post.c
     src/activert_notify.c
 )
 
 ################################################################################
 # Installable static library target
+#
+# NOTE: This target does NOT link FreeRTOS because FreeRTOS is provided by the
+# embedding project's toolchain/BSP. The caller must supply FreeRTOS headers
+# in their include path (e.g. via FREERTOS_INCLUDE_DIR or their own target).
 ################################################################################
 
 add_library(activert STATIC ${ACTIVERT_SOURCES})
@@ -51,13 +60,31 @@ target_include_directories(activert
 
 target_compile_features(activert PUBLIC c_std_11)
 
+# Apply compiler warnings (only when this is the top-level project)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CompilerWarnings)
     set_project_warnings(activert)
 endif()
 
 ################################################################################
-# Installation & CMake package config
+# Tests
+################################################################################
+
+if(ACTIVERT_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+################################################################################
+# Documentation
+################################################################################
+
+if(ACTIVERT_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
+
+################################################################################
+# Installation & CMake package config (for find_package support)
 ################################################################################
 
 include(GNUInstallDirs)
@@ -81,6 +108,7 @@ install(EXPORT ActiveRTTargets
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT
 )
 
+# Generate ActiveRTConfig.cmake and ActiveRTConfigVersion.cmake
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ActiveRTConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfig.cmake"
