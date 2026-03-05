@@ -1,0 +1,57 @@
+name: Documentation — Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "include/**"
+      - "src/**"
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write   # Required by peaceiris/actions-gh-pages
+
+jobs:
+  build-and-deploy:
+    name: Build Sphinx docs & deploy to GitHub Pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y doxygen graphviz ninja-build cmake
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python documentation dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure CMake (docs preset)
+        run: cmake --preset docs
+
+      - name: Build Doxygen + Sphinx
+        run: cmake --build --preset docs
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/docs/html
+          publish_branch: gh-pages
+          force_orphan: true       # Keep gh-pages branch clean
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "docs: deploy ${{ github.sha }}"

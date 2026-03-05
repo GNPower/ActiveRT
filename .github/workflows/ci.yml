@@ -1,0 +1,39 @@
+name: CI — Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test (ubuntu-latest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Full history for `git describe` version detection
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build cmake
+
+      - name: Configure (host-test preset)
+        run: cmake --preset host-test
+
+      - name: Build
+        run: cmake --build --preset host-test
+
+      - name: Run tests
+        run: ctest --preset host-test
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/host-test/Testing/

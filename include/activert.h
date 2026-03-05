@@ -100,10 +100,10 @@ extern "C" {
 
 /*
  * PATTERN 1: Create Event Pool
- *
+ * 
  *   #define POOL_SIZE 10
  *   static my_event_t pool_storage[POOL_SIZE];
- *
+ *   
  *   activert_event_pool_t* pool = activert_event_pool_create(
  *       "MyPool",
  *       pool_storage,
@@ -143,7 +143,7 @@ extern "C" {
 
 /*
  * PATTERN 3: Post Event to Active Object
- *
+ * 
  *   my_event_t* evt = (my_event_t*)activert_event_alloc(pool);
  *   if (evt != NULL) {
  *       evt->signal = MY_SIGNAL;
@@ -154,10 +154,10 @@ extern "C" {
 
 /*
  * PATTERN 4: Dispatch Handler
- *
+ * 
  *   void my_dispatch_handler(activert_active_t* me, activert_event_t* evt) {
  *       my_event_t* e = (my_event_t*)evt;
- *
+ *       
  *       switch (e->signal) {
  *           case INIT_SIG:
  *               // Initialize state
@@ -199,7 +199,7 @@ extern "C" {
  */
 
 /*
- * PATTERN 6: Notification Handler (ISR -> Task)
+ * PATTERN 6: Notification Handler (ISR → Task)
  *
  *   void my_notify_handler(activert_active_t* me, uint32_t value) {
  *       // Handle notification from ISR
