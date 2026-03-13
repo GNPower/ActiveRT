@@ -85,44 +85,50 @@ endif()
 
 ################################################################################
 # Installation & CMake package config (for find_package support)
+#
+# Skipped when ACTIVERT_BUILD_TESTS is ON: the test build links activert
+# against freertos_kernel (a FetchContent target) which CMake would require
+# to be in the export set. Test builds are never installed, so the install
+# and export rules are only registered for release/library-only builds.
 ################################################################################
 
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+if(NOT ACTIVERT_BUILD_TESTS)
+    include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
 
-install(TARGETS activert
-    EXPORT      ActiveRTTargets
-    ARCHIVE     DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY     DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME     DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+    install(TARGETS activert
+        EXPORT      ActiveRTTargets
+        ARCHIVE     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME     DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 
-install(DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILES_MATCHING PATTERN "*.h"
-)
+    install(DIRECTORY include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h"
+    )
 
-install(EXPORT ActiveRTTargets
-    FILE        ActiveRTTargets.cmake
-    NAMESPACE   ActiveRT::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT
-)
+    install(EXPORT ActiveRTTargets
+        FILE        ActiveRTTargets.cmake
+        NAMESPACE   ActiveRT::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT
+    )
 
-# Generate ActiveRTConfig.cmake and ActiveRTConfigVersion.cmake
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ActiveRTConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfig.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT"
-)
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ActiveRTConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfig.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT"
+    )
 
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
 
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT"
-)
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/ActiveRTConfigVersion.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ActiveRT"
+    )
+endif()

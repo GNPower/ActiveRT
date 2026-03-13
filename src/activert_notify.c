@@ -75,9 +75,9 @@ void activert_active_notify_from_isr(
     if (me->notification.semaphore != NULL)
     {
         // Accumulate notification bits (OR them together) - use ISR-safe critical section
-        UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+        UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
         me->notification.pending_value |= notify_bits;
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
 
         // Give semaphore to wake up task
         xSemaphoreGiveFromISR(me->notification.semaphore, pxHigherPriorityTaskWoken);
@@ -183,7 +183,7 @@ void activert_active_print_notification_stats(activert_active_t* me)
     if (me->stats.events_processed > 0U)
     {
         uint32_t total_events = me->stats.events_processed + me->stats.notifications_received;
-        float notify_ratio = (float)me->stats.notifications_received * 100.0f / (float)total_events;
+        float notify_ratio = (float)me->stats.notifications_received * 100.0F / (float)total_events;
         printf("Notification ratio:     %.1f%% (vs queue events)\n", notify_ratio);
     }
 

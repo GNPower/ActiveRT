@@ -284,9 +284,9 @@ int activert_stats_health_check(activert_health_check_t* result)
         if (active->stats.events_processed > 100U)
         {
             uint32_t total_events = active->stats.events_processed + active->stats.events_dropped;
-            float drop_rate = (float)active->stats.events_dropped * 100.0f / (float)total_events;
+            float drop_rate = (float)active->stats.events_dropped * 100.0F / (float)total_events;
 
-            if (drop_rate > 5.0f)
+            if (drop_rate > 5.0F)
             {
                 result->high_drop_rate = true;
                 result->warnings++;
@@ -340,9 +340,9 @@ int activert_stats_health_check(activert_health_check_t* result)
         if (pool->stats.allocs_attempted > 100U)
         {
             float fail_rate =
-                (float)pool->stats.allocs_failed * 100.0f / (float)pool->stats.allocs_attempted;
+                (float)pool->stats.allocs_failed * 100.0F / (float)pool->stats.allocs_attempted;
 
-            if (fail_rate > 50.0f)
+            if (fail_rate > 50.0F)
             {
                 result->pool_critical = true;
                 result->criticals++;

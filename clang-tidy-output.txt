@@ -1,0 +1,301 @@
+[1/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+323 warnings and 1 error generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+[2/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+1888 warnings and 1 error generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+[3/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+3453 warnings and 1 error generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+[4/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+5018 warnings and 1 error generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c.
+[5/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+5322 warnings and 2 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+[6/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+6864 warnings and 2 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+[7/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+8406 warnings and 2 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+[8/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+9948 warnings and 2 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_post.c.
+[9/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+10393 warnings and 3 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+[10/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+11956 warnings and 3 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+[11/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+13519 warnings and 3 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+[12/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+15082 warnings and 3 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c.
+[13/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+15407 warnings and 4 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+[14/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+16962 warnings and 6 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+[15/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+18517 warnings and 8 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+[16/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+20072 warnings and 10 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_active.c.
+[17/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+20375 warnings and 11 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+[18/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+21921 warnings and 11 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+[19/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+23467 warnings and 11 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+[20/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+25013 warnings and 11 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c.
+[21/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+25316 warnings and 12 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+[22/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+26843 warnings and 12 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+[23/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+28370 warnings and 12 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+[24/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+29897 warnings and 12 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c.
+[25/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+30220 warnings and 13 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+[26/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+31772 warnings and 13 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+[27/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+33324 warnings and 13 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+[28/7] Processing file /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+34876 warnings and 13 errors generated.
+Error while processing /home/runner/work/ActiveRT/ActiveRT/src/activert_event.c.
+/home/runner/work/ActiveRT/ActiveRT/include/activert_config.h:25:10: error: 'FreeRTOS.h' file not found [clang-diagnostic-error]
+   25 | #include "FreeRTOS.h"
+      |          ^~~~~~~~~~~~
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:44:13: warning: function 'activert_active_event_loop' exceeds recommended size/complexity thresholds [readability-function-size]
+   44 | static void activert_active_event_loop(void* pvParameters)
+      |             ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:44:13: note: 177 lines including whitespace and comments (threshold 150)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:111:13: warning: do not use 'else' after 'continue' [readability-else-after-return]
+  111 |             else
+      |             ^~~~
+  112 |             {
+      |             ~
+  113 |                 // No dispatch and no notification handler - error!
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  114 |                 ACTIVERT_ASSERT(0);
+      |                 ~~~~~~~~~~~~~~~~~~~
+  115 |             }
+      |             ~
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:169:45: warning: multilevel pointer conversion from 'activert_event_t **' (aka 'struct activert_event **') to 'void *', please use explicit cast [bugprone-multi-level-implicit-pointer-conversion]
+  169 |             if (xQueueReceive(active_queue, &event, 0) != pdPASS)
+      |                                             ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:178:53: warning: multilevel pointer conversion from 'activert_event_t **' (aka 'struct activert_event **') to 'void *', please use explicit cast [bugprone-multi-level-implicit-pointer-conversion]
+  178 |             if (xQueueReceive(me->queues[0].handle, &event, queue_timeout) != pdPASS)
+      |                                                     ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:293:27: warning: function 'activert_active_create_static_internal' exceeds recommended size/complexity thresholds [readability-function-size]
+  293 | static activert_active_t* activert_active_create_static_internal(
+      |                           ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:293:27: note: 182 lines including whitespace and comments (threshold 150)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:293:27: note: 109 statements (threshold 80)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:293:27: note: 16 parameters (threshold 8)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:407:23: error: incompatible integer to pointer conversion assigning to 'QueueSetHandle_t' (aka 'struct QueueDefinition *') from 'int' [clang-diagnostic-int-conversion]
+  407 |         me->queue_set = xQueueCreateSetStatic(queue_set_size, queue_set_storage, queue_set_cb);
+      |                       ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:407:25: error: call to undeclared function 'xQueueCreateSetStatic'; ISO C99 and later do not support implicit function declarations [clang-diagnostic-implicit-function-declaration]
+  407 |         me->queue_set = xQueueCreateSetStatic(queue_set_size, queue_set_storage, queue_set_cb);
+      |                         ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:407:25: note: did you mean 'xQueueCreateMutexStatic'?
+/home/runner/work/ActiveRT/ActiveRT/build/host-test/_deps/freertos_kernel-src/include/./queue.h:1501:19: note: 'xQueueCreateMutexStatic' declared here
+ 1501 |     QueueHandle_t xQueueCreateMutexStatic( const uint8_t ucQueueType,
+      |                   ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:504:20: warning: function 'activert_active_create_static' exceeds recommended size/complexity thresholds [readability-function-size]
+  504 | activert_active_t* activert_active_create_static(
+      |                    ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:504:20: note: 14 parameters (threshold 8)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:543:20: warning: function 'activert_active_create_with_notification_static' exceeds recommended size/complexity thresholds [readability-function-size]
+  543 | activert_active_t* activert_active_create_with_notification_static(
+      |                    ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_active.c:543:20: note: 16 parameters (threshold 8)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:547:23: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long') of a multiplication performed in type 'unsigned int' [bugprone-implicit-widening-of-multiplication-result]
+  547 |     else if (bytes < (1024U * 1024U))
+      |                       ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:547:23: note: make conversion explicit to silence this warning
+   26 |     else if (bytes < (1024U * 1024U))
+      |                       ^~~~~~~~~~~~~
+      |                       (size_t)(    )
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:547:23: note: perform multiplication in a wider type
+  547 |     else if (bytes < (1024U * 1024U))
+      |                       ^~~~~
+      |                       (size_t)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:553:71: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long') of a multiplication performed in type 'unsigned int' [bugprone-implicit-widening-of-multiplication-result]
+  553 |         snprintf(buffer, buffer_len, "%u MB", (unsigned int)(bytes / (1024U * 1024U)));
+      |                                                                       ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:553:71: note: make conversion explicit to silence this warning
+  553 |         snprintf(buffer, buffer_len, "%u MB", (unsigned int)(bytes / (1024U * 1024U)));
+      |                                                                       ^~~~~~~~~~~~~
+      |                                                                       (size_t)(    )
+/home/runner/work/ActiveRT/ActiveRT/src/activert_cli.c:553:71: note: perform multiplication in a wider type
+  553 |         snprintf(buffer, buffer_len, "%u MB", (unsigned int)(bytes / (1024U * 1024U)));
+      |                                                                       ^~~~~
+      |                                                                       (size_t)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:404:13: warning: switch has 2 consecutive identical branches [bugprone-branch-clone]
+  404 |             case ACTIVERT_POOL_OVERFLOW_DYNAMIC:
+      |             ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:418:28: note: last of these clones ends here
+  418 |                 return NULL;
+      |                            ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:464:17: warning: invalid case style for variable 'uxSavedInterruptStatus' [readability-identifier-naming]
+  464 |     UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+      |                 ^~~~~~~~~~~~~~~~~~~~~~
+      |                 ux_saved_interrupt_status
+  465 | 
+  466 |     // Find free event
+  467 |     int event_idx = find_free_event(pool);
+  468 | 
+  469 |     if (event_idx < 0)
+  470 |     {
+  471 |         // Pool exhausted
+  472 |         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~
+      |                                    ux_saved_interrupt_status
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:571:17: warning: invalid case style for variable 'uxSavedInterruptStatus' [readability-identifier-naming]
+  571 |     UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+      |                 ^~~~~~~~~~~~~~~~~~~~~~
+      |                 ux_saved_interrupt_status
+  572 | 
+  573 |     // Get event index
+  574 |     int event_idx = get_event_index(pool, event);
+  575 | 
+  576 |     if (event_idx < 0)
+  577 |     {
+  578 |         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~
+      |                                    ux_saved_interrupt_status
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:663:21: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long') of a multiplication performed in type 'unsigned int' [bugprone-implicit-widening-of-multiplication-result]
+  663 |         (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size)
+      |                     ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:663:21: note: make conversion explicit to silence this warning
+   23 |         (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size)
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                     (size_t)(                           )
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:663:21: note: perform multiplication in a wider type
+  663 |         (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size)
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                     (size_t)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:669:21: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long') of a multiplication performed in type 'unsigned int' [bugprone-implicit-widening-of-multiplication-result]
+  669 |         (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size)
+      |                     ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:669:21: note: make conversion explicit to silence this warning
+  669 |         (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size)
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                     (size_t)(                        )
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:669:21: note: perform multiplication in a wider type
+  669 |         (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size)
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                     (size_t)
+/home/runner/work/ActiveRT/ActiveRT/src/activert_event.c:681:51: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  681 |             (float)pool->stats.allocs_succeeded * 100.0f / (float)pool->stats.allocs_attempted;
+      |                                                   ^    ~
+      |                                                        F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c:78:21: warning: invalid case style for variable 'uxSavedInterruptStatus' [readability-identifier-naming]
+   78 |         UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+      |                     ^~~~~~~~~~~~~~~~~~~~~~
+      |                     ux_saved_interrupt_status
+   79 |         me->notification.pending_value |= notify_bits;
+   80 |         taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~
+      |                                    ux_saved_interrupt_status
+/home/runner/work/ActiveRT/ActiveRT/src/activert_notify.c:186:72: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  186 |         float notify_ratio = (float)me->stats.notifications_received * 100.0f / (float)total_events;
+      |                                                                        ^    ~
+      |                                                                             F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_post.c:126:25: warning: multilevel pointer conversion from 'activert_event_t **' (aka 'struct activert_event **') to 'const void *', please use explicit cast [bugprone-multi-level-implicit-pointer-conversion]
+  126 |     BaseType_t status = xQueueSendToBack(me->queues[queue_index].handle, &event, 0);
+      |                         ^
+/home/runner/work/ActiveRT/ActiveRT/build/host-test/_deps/freertos_kernel-src/include/./queue.h:429:36: note: expanded from macro 'xQueueSendToBack'
+  429 |     xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
+      |                                    ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_post.c:138:5: warning: do not use 'else' after 'return' [readability-else-after-return]
+  138 |     else
+      |     ^~~~
+  139 |     {
+      |     ~
+  140 | // Queue full
+      | ~~~~~~~~~~~~~
+  141 | #if ACTIVERT_ENABLE_STATS
+      | ~~~~~~~~~~~~~~~~~~~~~~~~~
+  142 |         me->queues[queue_index].stats.posts_failed++;
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  143 |         me->stats.events_dropped++;
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  144 | #endif /* ACTIVERT_ENABLE_STATS */
+      | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  145 | 
+  146 |         return -1;
+      |         ~~~~~~~~~~
+  147 |     }
+      |     ~
+/home/runner/work/ActiveRT/ActiveRT/src/activert_post.c:192:9: warning: multilevel pointer conversion from 'activert_event_t **' (aka 'struct activert_event **') to 'const void *', please use explicit cast [bugprone-multi-level-implicit-pointer-conversion]
+  192 |         xQueueSendToBackFromISR(me->queues[queue_index].handle, &event, pxHigherPriorityTaskWoken);
+      |         ^
+/home/runner/work/ActiveRT/ActiveRT/build/host-test/_deps/freertos_kernel-src/include/./queue.h:1110:43: note: expanded from macro 'xQueueSendToBackFromISR'
+ 1110 |     xQueueGenericSendFromISR( ( xQueue ), ( pvItemToQueue ), ( pxHigherPriorityTaskWoken ), queueSEND_TO_BACK )
+      |                                           ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_post.c:204:5: warning: do not use 'else' after 'return' [readability-else-after-return]
+  204 |     else
+      |     ^~~~
+  205 |     {
+      |     ~
+  206 | #if ACTIVERT_ENABLE_STATS
+      | ~~~~~~~~~~~~~~~~~~~~~~~~~
+  207 |         me->queues[queue_index].stats.posts_failed++;
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  208 |         me->stats.events_dropped++;
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  209 | #endif /* ACTIVERT_ENABLE_STATS */
+      | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  210 | 
+  211 |         return -1;
+      |         ~~~~~~~~~~
+  212 |     }
+      |     ~
+/home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c:69:58: warning: multilevel pointer conversion from 'activert_event_t **' (aka 'struct activert_event **') to 'void *', please use explicit cast [bugprone-multi-level-implicit-pointer-conversion]
+   69 |     while (xQueueReceive(me->queues[queue_index].handle, &event, 0) == pdPASS)
+      |                                                          ^
+/home/runner/work/ActiveRT/ActiveRT/src/activert_queue.c:190:51: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  190 |             (float)queue->stats.posts_succeeded * 100.0f / (float)queue->stats.posts_attempted;
+      |                                                   ^    ~
+      |                                                        F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c:287:69: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  287 |             float drop_rate = (float)active->stats.events_dropped * 100.0f / (float)total_events;
+      |                                                                     ^    ~
+      |                                                                          F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c:289:29: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  289 |             if (drop_rate > 5.0f)
+      |                             ^  ~
+      |                                F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c:343:52: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  343 |                 (float)pool->stats.allocs_failed * 100.0f / (float)pool->stats.allocs_attempted;
+      |                                                    ^    ~
+      |                                                         F
+/home/runner/work/ActiveRT/ActiveRT/src/activert_stats.c:345:29: warning: floating point literal has suffix 'f', which is not uppercase [readability-uppercase-literal-suffix]
+  345 |             if (fail_rate > 50.0f)
+      |                             ^   ~
+      |                                 F
+Suppressed 34776 warnings (34758 in non-user code, 18 with check filters).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+Found compiler error(s).

@@ -15,16 +15,6 @@ Deviations fall into two categories:
 
 ## Inline Deviations
 
-### Rule 11.5 - Cast from `void*` to a pointer-to-object type
-
-| Field | Detail |
-| --- | --- |
-| **Locations** | `src/activert_active.c` - `activert_task_fn()` and `activert_loop_task_fn()` (`void* pvParameters` -> `activert_active_t*`); `src/activert_event.c` - `get_event_at_index()` (`void*` pool storage -> `activert_event_t*`); `activert_event_pool_create()` (`ACTIVERT_MALLOC` return -> typed pointers); `get_event_index()` (`void*` pool storage -> `uint8_t*`) |
-| **Category** | Advisory |
-| **Rationale** | Two contexts require `void*`-to-object-pointer casts: (1) The FreeRTOS task API passes the task argument as `void* pvParameters`; ActiveRT always registers task functions with an `activert_active_t*` argument so the cast is type-safe. No alternative exists without modifying the FreeRTOS API contract. (2) The event pool stores raw bytes as `void*` to remain type-agnostic; indexing into the pool requires byte-level arithmetic via `uint8_t*`, then casting the result back through `void*` to the typed event pointer. This is the standard MISRA-C pattern for pool allocators and eliminates the more serious Rule 11.3 (Required) violation that would arise from casting directly between two object pointer types. |
-
----
-
 ### Rule 11.3 - Cast between pointer to different object types
 
 | Field | Detail |
@@ -68,6 +58,16 @@ Deviations fall into two categories:
 ---
 
 ## Global Deviations
+
+### Rule 11.5 - Cast from `void*` to a pointer-to-object type
+
+| Field | Detail |
+| --- | --- |
+| **Scope** | `src/activert_event.c`, `src/activert_active.c` |
+| **Category** | Advisory |
+| **Rationale** | Two contexts require `void*`-to-object-pointer casts: (1) The FreeRTOS task API passes the task argument as `void* pvParameters`; ActiveRT always registers task functions with an `activert_active_t*` argument so the cast is type-safe. No alternative exists without modifying the FreeRTOS API contract. (2) The event pool stores raw bytes as `void*` to remain type-agnostic; `ACTIVERT_MALLOC` returns `void*` (standard C), and indexing into the pool requires byte-level arithmetic via `uint8_t*`, then casting back to the typed event pointer. This is the standard MISRA-C pattern for pool allocators and eliminates the more serious Rule 11.3 (Required) violation that would arise from casting directly between two object pointer types. cppcheck inline suppressions for multi-line declarations (`void* result = MALLOC(...);` split across two source lines) are not reliably applied by cppcheck when the `/*` and `*/` are more than one line before the cast expression; global suppression avoids this formatting-sensitive fragility. |
+
+---
 
 ### Rule 2.5 - Unused macro declarations
 

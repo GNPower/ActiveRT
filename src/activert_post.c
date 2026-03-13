@@ -123,7 +123,7 @@ int activert_active_post_to_queue(
 
     // Post event to queue (non-blocking)
     // Queue stores activert_event_t*, so send the pointer value, not its address
-    BaseType_t status = xQueueSendToBack(me->queues[queue_index].handle, &event, 0);
+    BaseType_t status = xQueueSendToBack(me->queues[queue_index].handle, (const void*)&event, 0);
     __asm__ volatile("" ::: "memory");  // Memory barrier - prevents optimization
 
     if (status == pdPASS)
@@ -135,16 +135,14 @@ int activert_active_post_to_queue(
 
         return 0;
     }
-    else
-    {
-// Queue full
+
+    // Queue full
 #if ACTIVERT_ENABLE_STATS
-        me->queues[queue_index].stats.posts_failed++;
-        me->stats.events_dropped++;
+    me->queues[queue_index].stats.posts_failed++;
+    me->stats.events_dropped++;
 #endif /* ACTIVERT_ENABLE_STATS */
 
-        return -1;
-    }
+    return -1;
 }
 
 /*******************************************************************************
@@ -188,8 +186,9 @@ int activert_active_post_to_queue_from_isr(
 #endif /* ACTIVERT_ENABLE_STATS */
 
     // Post event to queue from ISR
-    BaseType_t status =
-        xQueueSendToBackFromISR(me->queues[queue_index].handle, &event, pxHigherPriorityTaskWoken);
+    BaseType_t status = xQueueSendToBackFromISR(
+        me->queues[queue_index].handle, (const void*)&event, pxHigherPriorityTaskWoken
+    );
 
     if (status == pdPASS)
     {
@@ -201,13 +200,11 @@ int activert_active_post_to_queue_from_isr(
 
         return 0;
     }
-    else
-    {
+
 #if ACTIVERT_ENABLE_STATS
-        me->queues[queue_index].stats.posts_failed++;
-        me->stats.events_dropped++;
+    me->queues[queue_index].stats.posts_failed++;
+    me->stats.events_dropped++;
 #endif /* ACTIVERT_ENABLE_STATS */
 
-        return -1;
-    }
+    return -1;
 }

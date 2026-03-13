@@ -108,11 +108,9 @@ static void activert_active_event_loop(void* pvParameters)
                 me->notification.handler(me, notify_bits);
                 continue;
             }
-            else
-            {
-                // No dispatch and no notification handler - error!
-                ACTIVERT_ASSERT(0);
-            }
+
+            // No dispatch and no notification handler - error!
+            ACTIVERT_ASSERT(0);
         }
 
         QueueSetMemberHandle_t active_queue;
@@ -166,7 +164,7 @@ static void activert_active_event_loop(void* pvParameters)
             }
 
             // It's a queue - receive from it
-            if (xQueueReceive(active_queue, &event, 0) != pdPASS)
+            if (xQueueReceive(active_queue, (void*)&event, 0) != pdPASS)
             {
                 // Shouldn't happen - queue set said this queue had data
                 continue;
@@ -175,7 +173,7 @@ static void activert_active_event_loop(void* pvParameters)
         else
         {
             // Single queue - receive directly
-            if (xQueueReceive(me->queues[0].handle, &event, queue_timeout) != pdPASS)
+            if (xQueueReceive(me->queues[0].handle, (void*)&event, queue_timeout) != pdPASS)
             {
                 // Timeout or error - continue to check notifications
                 continue;

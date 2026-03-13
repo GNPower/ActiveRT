@@ -544,13 +544,13 @@ const char* activert_cli_format_bytes(size_t bytes, char* buffer, size_t buffer_
     {
         snprintf(buffer, buffer_len, "%u B", (unsigned int)bytes);
     }
-    else if (bytes < (1024U * 1024U))
+    else if (bytes < ((size_t)1024U * 1024U))
     {
         snprintf(buffer, buffer_len, "%u KB", (unsigned int)(bytes / 1024U));
     }
     else
     {
-        snprintf(buffer, buffer_len, "%u MB", (unsigned int)(bytes / (1024U * 1024U)));
+        snprintf(buffer, buffer_len, "%u MB", (unsigned int)(bytes / ((size_t)1024U * 1024U)));
     }
     return buffer;
 }

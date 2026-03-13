@@ -204,6 +204,7 @@ class MisraChecker:
             "--suppress=misra-c2012-21.15",
             "--suppress=misra-c2012-22.8",
             "--suppress=misra-c2012-22.9",
+            "--suppress=misra-c2012-11.5",
             "--std=c11",
             "--inline-suppr",
             "-D", "tskKERNEL_VERSION_MAJOR=11",

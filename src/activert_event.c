@@ -403,16 +403,18 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
 
             case ACTIVERT_POOL_OVERFLOW_DYNAMIC:
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
-                // Fall back to dynamic allocation
-                activert_event_t* event = (activert_event_t*)ACTIVERT_MALLOC(pool->event_size);
-                if (event)
                 {
-                    event->pool = NULL;  // Mark as dynamically allocated
+                    // Fall back to dynamic allocation
+                    activert_event_t* event =
+                        (activert_event_t*)ACTIVERT_MALLOC(pool->event_size);
+                    if (event)
+                    {
+                        event->pool = NULL;  // Mark as dynamically allocated
+                    }
+                    return event;
                 }
-                return event;
-#else  /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
-                return NULL;
 #endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
+                return NULL;
 
             default:
                 return NULL;
@@ -461,7 +463,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
 #endif /* ACTIVERT_ENABLE_STATS */
 
     // Use critical section — xSemaphoreTakeFromISR does not support mutexes
-    UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+    UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
 
     // Find free event
     int event_idx = find_free_event(pool);
@@ -469,7 +471,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
     if (event_idx < 0)
     {
         // Pool exhausted
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
 
 #if ACTIVERT_ENABLE_STATS
         pool->stats.allocs_failed++;
@@ -499,7 +501,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
     }
 #endif /* ACTIVERT_ENABLE_STATS */
 
-    taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+    taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
 
     return event;
 }
@@ -568,14 +570,14 @@ void activert_event_pool_free_from_isr(activert_event_t* event)
     activert_event_pool_t* pool = event->pool;
 
     // Use critical section — xSemaphoreTakeFromISR does not support mutexes
-    UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+    UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
 
     // Get event index
     int event_idx = get_event_index(pool, event);
 
     if (event_idx < 0)
     {
-        taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
         ACTIVERT_ASSERT(0);
         return;
     }
@@ -589,7 +591,7 @@ void activert_event_pool_free_from_isr(activert_event_t* event)
     pool->stats.current_allocated--;
 #endif /* ACTIVERT_ENABLE_STATS */
 
-    taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+    taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
 }
 
 /*******************************************************************************
@@ -660,13 +662,13 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool)
         "Current:        %u / %zu (%u%%)\n",
         pool->stats.current_allocated,
         pool->pool_size,
-        (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size)
+        (uint32_t)(((size_t)pool->stats.current_allocated * 100U) / pool->pool_size)
     );
     printf(
         "Peak:           %u / %zu (%u%%)\n",
         pool->stats.peak_allocated,
         pool->pool_size,
-        (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size)
+        (uint32_t)(((size_t)pool->stats.peak_allocated * 100U) / pool->pool_size)
     );
     printf(
         "Allocations:    %u (%u OK, %u failed)\n",
@@ -678,7 +680,7 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool)
     if (pool->stats.allocs_attempted > 0U)
     {
         float success_rate =
-            (float)pool->stats.allocs_succeeded * 100.0f / (float)pool->stats.allocs_attempted;
+            (float)pool->stats.allocs_succeeded * 100.0F / (float)pool->stats.allocs_attempted;
         printf("Success rate:   %.2f%%\n", success_rate);
     }
 

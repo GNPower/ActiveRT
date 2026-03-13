@@ -66,7 +66,7 @@ uint32_t activert_queue_flush(activert_active_t* me, uint8_t queue_index)
     activert_event_t* event;
 
     // Receive and discard all events
-    while (xQueueReceive(me->queues[queue_index].handle, &event, 0) == pdPASS)
+    while (xQueueReceive(me->queues[queue_index].handle, (void*)&event, 0) == pdPASS)
     {
         // Recycle event if it came from a pool
         if (event && event->pool)
@@ -187,7 +187,7 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
     if (queue->stats.posts_attempted > 0U)
     {
         float success_rate =
-            (float)queue->stats.posts_succeeded * 100.0f / (float)queue->stats.posts_attempted;
+            (float)queue->stats.posts_succeeded * 100.0F / (float)queue->stats.posts_attempted;
         printf("  Success rate: %.2f%%\n", success_rate);
     }
 

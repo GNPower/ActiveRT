@@ -43,20 +43,13 @@ set(FREERTOS_HEAP "4"         CACHE STRING "FreeRTOS heap impl" FORCE)
 
 FetchContent_MakeAvailable(freertos_kernel)
 
-# Give the root 'activert' library target access to FreeRTOS headers so that
-# compile_commands.json entries are correct for clang-tidy analysis.
-# We use target_include_directories (NOT target_link_libraries) because adding
-# freertos_kernel as a link dependency of the installed 'activert' target would
-# cause install(EXPORT ActiveRTTargets) to fail: CMake requires all linked
-# targets to be in the export set, but freertos_kernel is a FetchContent target
-# that is not installed alongside the library.
-get_target_property(_freertos_idir freertos_kernel INTERFACE_INCLUDE_DIRECTORIES)
-if(_freertos_idir)
-    target_include_directories(activert PRIVATE ${_freertos_idir})
-endif()
-target_include_directories(activert PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/posix_config"
-)
+# Give the root 'activert' library target access to FreeRTOS headers.
+# This ensures compile_commands.json entries for library sources include the
+# correct paths, which fixes both the CI build and clang-tidy analysis.
+# The install(EXPORT) rules in the root CMakeLists.txt are guarded by
+# NOT ACTIVERT_BUILD_TESTS, so this link dependency does not conflict with
+# the CMake package export set.
+target_link_libraries(activert PRIVATE freertos_kernel)
 
 ################################################################################
 # Unity test framework
