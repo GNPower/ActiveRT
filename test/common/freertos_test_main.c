@@ -30,7 +30,7 @@ static StackType_t s_idle_task_stack[configMINIMAL_STACK_SIZE];
 void vApplicationGetIdleTaskMemory(
     StaticTask_t** ppxIdleTaskTCBBuffer,
     StackType_t** ppxIdleTaskStackBuffer,
-    uint32_t* pulIdleTaskStackSize
+    StackType_t* pulIdleTaskStackSize
 )
 {
     *ppxIdleTaskTCBBuffer   = &s_idle_task_tcb;

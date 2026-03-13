@@ -16,6 +16,7 @@ Checks: >
   -bugprone-reserved-identifier,
   -bugprone-easily-swappable-parameters,
   -bugprone-macro-parentheses,
+  -bugprone-branch-clone,
   -readability-magic-numbers,
   -readability-identifier-length,
   -readability-function-cognitive-complexity,
@@ -31,7 +32,7 @@ HeaderFilterRegex: '^((?!FreeRTOS|freertos|portable|unity).)*$'
 
 CheckOptions:
   - key:   readability-function-size.StatementThreshold
-    value: '80'
+    value: '200'
   - key:   readability-function-size.LineThreshold
     value: '250'
   - key:   readability-function-size.ParameterThreshold

@@ -180,12 +180,12 @@
 *******************************************************************************/
 
 /*
- * StaticQueueSet_t was added in FreeRTOS 11.x
- * For older versions, we can't use static allocation for queue sets
+ * xQueueCreateSetStatic was added in FreeRTOS 11.2.0.
+ * For older versions, static queue set allocation is unavailable.
  */
-#if !defined(tskKERNEL_VERSION_MAJOR) || (tskKERNEL_VERSION_MAJOR < 11)
-    #error "ActiveRT requires FreeRTOS 11.x or later for static queue set support. " \
-    "Please upgrade your FreeRTOS version."
+#if !defined(tskKERNEL_VERSION_MAJOR) || (tskKERNEL_VERSION_MAJOR < 11) || \
+    (tskKERNEL_VERSION_MAJOR == 11 && tskKERNEL_VERSION_MINOR < 2)
+    #error "ActiveRT requires FreeRTOS 11.2.0 or later. Please upgrade your FreeRTOS version."
 #endif
 
 #endif /* ACTIVERT_CONFIG_H */

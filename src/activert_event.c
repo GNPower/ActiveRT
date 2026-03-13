@@ -403,18 +403,19 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
 
             case ACTIVERT_POOL_OVERFLOW_DYNAMIC:
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
+                // Fall back to dynamic allocation
                 {
-                    // Fall back to dynamic allocation
-                    activert_event_t* event =
+                    activert_event_t* dyn_event =
                         (activert_event_t*)ACTIVERT_MALLOC(pool->event_size);
-                    if (event)
+                    if (dyn_event != NULL)
                     {
-                        event->pool = NULL;  // Mark as dynamically allocated
+                        dyn_event->pool = NULL;  // Mark as dynamically allocated
                     }
-                    return event;
+                    return dyn_event;
                 }
-#endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
+#else
                 return NULL;
+#endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
 
             default:
                 return NULL;
