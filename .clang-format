@@ -36,11 +36,11 @@ SpaceInEmptyParentheses:      false
 SpacesInCStyleCastParentheses: false
 
 # Line breaking
+# BlockIndent: when params/args don't fit on one line, break after '(', put
+# each on its own line, and place the closing ')' on its own line.
 BinPackArguments:             false
 BinPackParameters:            false
-AllowAllArgumentsOnNextLine:  true
-AllowAllParametersOfDeclarationOnNextLine: true
-AlignAfterOpenBracket:        Align
+AlignAfterOpenBracket:        BlockIndent
 
 # Trailing commas
 InsertTrailingCommas:         None

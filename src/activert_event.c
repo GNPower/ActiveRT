@@ -108,7 +108,8 @@ static activert_event_t* get_event_at_index(activert_event_pool_t* pool, size_t 
      * Deviation: pool_memory is void* raw storage; uint8_t* is needed for
      * byte-level array indexing into the pool. */
     uint8_t* base = (uint8_t*)pool->pool_memory;
-    void*    addr = &base[(event_idx * pool->event_size)]; /* array subscript, not pointer arithmetic */
+    void* addr =
+        &base[(event_idx * pool->event_size)]; /* array subscript, not pointer arithmetic */
     /* cppcheck-suppress misra-c2012-11.5
      * Deviation: convert void* raw storage back to the typed event pointer.
      * Safe because the pool stores only activert_event_t-derived objects at
@@ -128,7 +129,7 @@ static int get_event_index(activert_event_pool_t* pool, const activert_event_t* 
     /* cppcheck-suppress misra-c2012-11.5
      * Deviation: pool_memory is void* raw storage; uint8_t* needed for
      * byte-level array indexing and range comparison. */
-    uint8_t*       base     = (uint8_t*)pool->pool_memory;
+    uint8_t* base = (uint8_t*)pool->pool_memory;
     /* cppcheck-suppress misra-c2012-11.3
      * Deviation: const activert_event_t* cast to const uint8_t* for byte-level
      * comparison to locate the event within the pool. const is preserved. */
@@ -166,11 +167,13 @@ static int get_event_index(activert_event_pool_t* pool, const activert_event_t* 
 * Event Pool Creation
 *******************************************************************************/
 
-activert_event_pool_t* activert_event_pool_create(const char* name,
-                                                  void* pool_memory,
-                                                  size_t event_size,
-                                                  size_t pool_size,
-                                                  activert_pool_overflow_policy_t policy)
+activert_event_pool_t* activert_event_pool_create(
+    const char* name,
+    void* pool_memory,
+    size_t event_size,
+    size_t pool_size,
+    activert_pool_overflow_policy_t policy
+)
 {
     // Validate parameters
     ACTIVERT_ASSERT(pool_memory != NULL);
@@ -181,7 +184,8 @@ activert_event_pool_t* activert_event_pool_create(const char* name,
     /* cppcheck-suppress misra-c2012-11.5
      * Deviation: ACTIVERT_MALLOC returns void*; cast to the allocated type is
      * unavoidable in C dynamic allocation. */
-    activert_event_pool_t* pool = (activert_event_pool_t*)ACTIVERT_MALLOC(sizeof(activert_event_pool_t));
+    activert_event_pool_t* pool =
+        (activert_event_pool_t*)ACTIVERT_MALLOC(sizeof(activert_event_pool_t));
     if (pool == NULL)
     {
         return NULL;
@@ -192,7 +196,7 @@ activert_event_pool_t* activert_event_pool_create(const char* name,
     /* cppcheck-suppress misra-c2012-11.5
      * Deviation: ACTIVERT_MALLOC returns void*; cast to uint8_t* for bitmap
      * byte array is unavoidable in C dynamic allocation. */
-    pool->usage_bitmap  = (uint8_t*)ACTIVERT_MALLOC(bitmap_bytes);
+    pool->usage_bitmap = (uint8_t*)ACTIVERT_MALLOC(bitmap_bytes);
     if (pool->usage_bitmap == NULL)
     {
         ACTIVERT_FREE(pool);
@@ -214,7 +218,7 @@ activert_event_pool_t* activert_event_pool_create(const char* name,
 // Initialize pool fields
 #if ACTIVERT_ENABLE_NAMES
     pool->name = name;
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
     pool->pool_memory = pool_memory;
     pool->event_size  = event_size;
     pool->pool_size   = pool_size;
@@ -223,29 +227,33 @@ activert_event_pool_t* activert_event_pool_create(const char* name,
 // Initialize statistics
 #if ACTIVERT_ENABLE_STATS
     memset(&pool->stats, 0, sizeof(pool->stats));
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
 #if ACTIVERT_ENABLE_DEBUG
-    printf("activert_event_pool_create: Created pool '%s' with %zu events of %zu bytes each\n",
-           name ? name : "unnamed",
-           pool_size,
-           event_size);
-#endif
+    printf(
+        "activert_event_pool_create: Created pool '%s' with %zu events of %zu bytes each\n",
+        name ? name : "unnamed",
+        pool_size,
+        event_size
+    );
+#endif /* ACTIVERT_ENABLE_DEBUG */
 
 #if ACTIVERT_ENABLE_STATS
     activert_stats_register_pool(pool);
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     return pool;
 }
 
-void activert_event_pool_init_static(activert_event_pool_t* pool,
-                                     const char* name,
-                                     void* pool_memory,
-                                     uint8_t* bitmap,
-                                     size_t event_size,
-                                     size_t pool_size,
-                                     activert_pool_overflow_policy_t policy)
+void activert_event_pool_init_static(
+    activert_event_pool_t* pool,
+    const char* name,
+    void* pool_memory,
+    uint8_t* bitmap,
+    size_t event_size,
+    size_t pool_size,
+    activert_pool_overflow_policy_t policy
+)
 {
     ACTIVERT_ASSERT(pool != NULL);
     ACTIVERT_ASSERT(pool_memory != NULL);
@@ -261,9 +269,9 @@ void activert_event_pool_init_static(activert_event_pool_t* pool,
 
 #if ACTIVERT_ENABLE_NAMES
     pool->name = name;
-#else
+#else  /* ACTIVERT_ENABLE_NAMES */
     (void)name;
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
     pool->pool_memory  = pool_memory;
     pool->usage_bitmap = bitmap;
     pool->event_size   = event_size;
@@ -272,27 +280,28 @@ void activert_event_pool_init_static(activert_event_pool_t* pool,
 
 #if ACTIVERT_ENABLE_STATS
     memset(&pool->stats, 0, sizeof(pool->stats));
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
 #if ACTIVERT_ENABLE_DEBUG
-    printf("activert_event_pool_init_static: Initialized pool '%s' with %zu events of %zu bytes "
-           "each\n",
-           name ? name : "unnamed",
-           pool_size,
-           event_size);
-#endif
+    printf(
+        "activert_event_pool_init_static: Initialized pool '%s' with %zu events of %zu bytes "
+        "each\n",
+        name ? name : "unnamed",
+        pool_size,
+        event_size
+    );
+#endif /* ACTIVERT_ENABLE_DEBUG */
 
 #if ACTIVERT_ENABLE_STATS
     activert_stats_register_pool(pool);
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 }
 
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
 
-activert_event_pool_t* activert_event_pool_create_dynamic(const char* name,
-                                                          size_t event_size,
-                                                          size_t pool_size,
-                                                          activert_pool_overflow_policy_t policy)
+activert_event_pool_t* activert_event_pool_create_dynamic(
+    const char* name, size_t event_size, size_t pool_size, activert_pool_overflow_policy_t policy
+)
 {
     // Validate parameters
     ACTIVERT_ASSERT(event_size >= sizeof(activert_event_t));
@@ -316,9 +325,10 @@ activert_event_pool_t* activert_event_pool_create_dynamic(const char* name,
     }
 
     #if ACTIVERT_ENABLE_DEBUG
-    printf("activert_event_pool_create_dynamic: Created dynamic pool '%s'\n",
-           name ? name : "unnamed");
-    #endif
+    printf(
+        "activert_event_pool_create_dynamic: Created dynamic pool '%s'\n", name ? name : "unnamed"
+    );
+    #endif /* ACTIVERT_ENABLE_DEBUG */
 
     return pool;
 }
@@ -329,10 +339,11 @@ void activert_event_pool_destroy(activert_event_pool_t* pool)
 
     #if ACTIVERT_ENABLE_DEBUG
         #if ACTIVERT_ENABLE_NAMES
-    printf("activert_event_pool_destroy: Destroying pool '%s'\n",
-           pool->name ? pool->name : "unnamed");
-        #endif
-    #endif
+    printf(
+        "activert_event_pool_destroy: Destroying pool '%s'\n", pool->name ? pool->name : "unnamed"
+    );
+        #endif /* ACTIVERT_ENABLE_NAMES */
+    #endif     /* ACTIVERT_ENABLE_DEBUG */
 
     vSemaphoreDelete(pool->mutex);
     ACTIVERT_FREE(pool->usage_bitmap);
@@ -352,7 +363,7 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
 
 #if ACTIVERT_ENABLE_STATS
     pool->stats.allocs_attempted++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     // Take mutex for thread-safe access
     if (xSemaphoreTake(pool->mutex, portMAX_DELAY) != pdTRUE)
@@ -370,15 +381,15 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
 
 #if ACTIVERT_ENABLE_STATS
         pool->stats.allocs_failed++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
 #if ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION
     #if ACTIVERT_ENABLE_NAMES
         printf("WARNING: Event pool '%s' exhausted!\n", pool->name ? pool->name : "unnamed");
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
         printf("WARNING: Event pool exhausted!\n");
-    #endif
-#endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION */
 
         // Handle overflow based on policy
         switch (pool->policy)
@@ -399,9 +410,9 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
                     event->pool = NULL;  // Mark as dynamically allocated
                 }
                 return event;
-#else
+#else  /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
                 return NULL;
-#endif
+#endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
 
             default:
                 return NULL;
@@ -426,15 +437,17 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
     {
         pool->stats.peak_allocated = pool->stats.current_allocated;
     }
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     xSemaphoreGive(pool->mutex);
 
 #if ACTIVERT_ENABLE_DEBUG
-    printf("activert_event_pool_alloc: Allocated event %d from pool '%s'\n",
-           event_idx,
-           pool->name ? pool->name : "unnamed");
-#endif
+    printf(
+        "activert_event_pool_alloc: Allocated event %d from pool '%s'\n",
+        event_idx,
+        pool->name ? pool->name : "unnamed"
+    );
+#endif /* ACTIVERT_ENABLE_DEBUG */
 
     return event;
 }
@@ -445,7 +458,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
 
 #if ACTIVERT_ENABLE_STATS
     pool->stats.allocs_attempted++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     // Use critical section — xSemaphoreTakeFromISR does not support mutexes
     UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
@@ -460,7 +473,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
 
 #if ACTIVERT_ENABLE_STATS
         pool->stats.allocs_failed++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
         // In ISR, we can only drop events
         return NULL;
@@ -484,7 +497,7 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
     {
         pool->stats.peak_allocated = pool->stats.current_allocated;
     }
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 
@@ -505,7 +518,7 @@ void activert_event_pool_free(activert_event_t* event)
 // Dynamically allocated event
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
         ACTIVERT_FREE(event);
-#endif
+#endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
         return;
     }
 
@@ -535,7 +548,7 @@ void activert_event_pool_free(activert_event_t* event)
 #if ACTIVERT_ENABLE_STATS
     pool->stats.frees++;
     pool->stats.current_allocated--;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     xSemaphoreGive(pool->mutex);
 }
@@ -574,7 +587,7 @@ void activert_event_pool_free_from_isr(activert_event_t* event)
 #if ACTIVERT_ENABLE_STATS
     pool->stats.frees++;
     pool->stats.current_allocated--;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
@@ -637,22 +650,30 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool)
     printf("Event Pool\n");
     #endif
     printf("================================================================\n");
-    printf("Size:           %zu events x %zu bytes = %zu bytes\n",
-           pool->pool_size,
-           pool->event_size,
-           pool->pool_size * pool->event_size);
-    printf("Current:        %u / %zu (%u%%)\n",
-           pool->stats.current_allocated,
-           pool->pool_size,
-           (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size));
-    printf("Peak:           %u / %zu (%u%%)\n",
-           pool->stats.peak_allocated,
-           pool->pool_size,
-           (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size));
-    printf("Allocations:    %u (%u OK, %u failed)\n",
-           pool->stats.allocs_attempted,
-           pool->stats.allocs_succeeded,
-           pool->stats.allocs_failed);
+    printf(
+        "Size:           %zu events x %zu bytes = %zu bytes\n",
+        pool->pool_size,
+        pool->event_size,
+        pool->pool_size * pool->event_size
+    );
+    printf(
+        "Current:        %u / %zu (%u%%)\n",
+        pool->stats.current_allocated,
+        pool->pool_size,
+        (uint32_t)((pool->stats.current_allocated * 100U) / pool->pool_size)
+    );
+    printf(
+        "Peak:           %u / %zu (%u%%)\n",
+        pool->stats.peak_allocated,
+        pool->pool_size,
+        (uint32_t)((pool->stats.peak_allocated * 100U) / pool->pool_size)
+    );
+    printf(
+        "Allocations:    %u (%u OK, %u failed)\n",
+        pool->stats.allocs_attempted,
+        pool->stats.allocs_succeeded,
+        pool->stats.allocs_failed
+    );
 
     if (pool->stats.allocs_attempted > 0U)
     {

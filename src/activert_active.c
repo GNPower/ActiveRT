@@ -29,8 +29,6 @@
 * Functions Declarations
 *******************************************************************************/
 
-
-
 /*******************************************************************************
 * Internal Helper Functions
 *******************************************************************************/
@@ -56,8 +54,8 @@ static void activert_active_event_loop(void* pvParameters)
 #if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
     printf("activert_active_event_loop: Starting task '%s'\n", me->name ? me->name : "unnamed");
-    #endif
-#endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
 
     // Send INIT_SIG to dispatch handler (if it exists)
     if (me->dispatch != NULL)
@@ -81,7 +79,7 @@ static void activert_active_event_loop(void* pvParameters)
             {
 #if ACTIVERT_ENABLE_STATS
                 me->stats.notifications_received++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
                 // Call notification handler
                 me->notification.handler(me, notify_bits);
@@ -105,7 +103,7 @@ static void activert_active_event_loop(void* pvParameters)
 
 #if ACTIVERT_ENABLE_STATS
                 me->stats.notifications_received++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
                 me->notification.handler(me, notify_bits);
                 continue;
@@ -160,7 +158,7 @@ static void activert_active_event_loop(void* pvParameters)
 
 #if ACTIVERT_ENABLE_STATS
                     me->stats.notifications_received++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
                 }
 
                 // Continue to next iteration
@@ -189,13 +187,13 @@ static void activert_active_event_loop(void* pvParameters)
         {
 #if ACTIVERT_ENABLE_DEBUG
             printf("activert_active_event_loop: Received NULL event!\n");
-#endif
+#endif /* ACTIVERT_ENABLE_DEBUG */
             continue;
         }
 
 #if ACTIVERT_ENABLE_TIMING_STATS
         TickType_t start_time = xTaskGetTickCount();
-#endif
+#endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
         // Dispatch event
         me->dispatch(me, event);
@@ -212,8 +210,8 @@ static void activert_active_event_loop(void* pvParameters)
             me->stats.max_processing_time = processing_time;
             me->stats.slowest_signal      = event->sig;
         }
-    #endif
-#endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
+#endif     /* ACTIVERT_ENABLE_STATS */
 
         // Auto-recycle event if it came from a pool
         if (event->pool != NULL)
@@ -232,10 +230,12 @@ static void activert_active_event_loop(void* pvParameters)
  * @param queue_cb      Pre-allocated queue control block (static) or NULL (dynamic)
  * @return              0 on success, -1 on error
  */
-static int create_queue(activert_queue_t* queue,
-                        const activert_queue_config_t* config,
-                        activert_event_t** queue_storage,
-                        StaticQueue_t* queue_cb)
+static int create_queue(
+    activert_queue_t* queue,
+    const activert_queue_config_t* config,
+    activert_event_t** queue_storage,
+    StaticQueue_t* queue_cb
+)
 {
     // Copy configuration
     queue->signal_base  = config->signal_base;
@@ -248,16 +248,17 @@ static int create_queue(activert_queue_t* queue,
     {
         // Static allocation
         queue->handle = xQueueCreateStatic(
-            config->queue_length, sizeof(activert_event_t*), (uint8_t*)queue_storage, queue_cb);
+            config->queue_length, sizeof(activert_event_t*), (uint8_t*)queue_storage, queue_cb
+        );
     }
     else
     {
 // Dynamic allocation
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
         queue->handle = xQueueCreate(config->queue_length, sizeof(activert_event_t*));
-#else
+#else  /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
         return -1;  // Dynamic allocation disabled
-#endif
+#endif /* ACTIVERT_ENABLE_DYNAMIC_ALLOCATION */
     }
 
     if (queue->handle == NULL)
@@ -268,7 +269,7 @@ static int create_queue(activert_queue_t* queue,
 // Initialize statistics
 #if ACTIVERT_ENABLE_STATS
     memset(&queue->stats, 0, sizeof(queue->stats));
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     return 0;
 }
@@ -289,29 +290,30 @@ static int create_queue(activert_queue_t* queue,
  * @param notification_handler  Optional notification handler (NULL if not used)
  * @param notify_sem_cb         Optional semaphore storage for notifications (NULL if not used)
  */
-static activert_active_t*
-activert_active_create_static_internal(activert_active_t* active_storage,
-                                       activert_queue_t* queue_structs,
-                                       const char* name,
-                                       activert_dispatch_handler_t dispatch,
-                                       activert_notify_handler_t notification_handler,
-                                       StaticSemaphore_t* notify_sem_cb,
-                                       UBaseType_t priority,
-                                       StackType_t* stack,
-                                       size_t stack_size,
-                                       StaticTask_t* task_cb,
-                                       activert_queue_config_t* queue_configs,
-                                       uint8_t num_queues,
-                                       StaticQueue_t* queue_cbs,
-                                       /* cppcheck-suppress misra-c2012-18.5
+static activert_active_t* activert_active_create_static_internal(
+    activert_active_t* active_storage,
+    activert_queue_t* queue_structs,
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_notify_handler_t notification_handler,
+    StaticSemaphore_t* notify_sem_cb,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues,
+    StaticQueue_t* queue_cbs,
+    /* cppcheck-suppress misra-c2012-18.5
                                         * Deviation: activert_queue_storage_t* is a pointer to a
                                         * caller-provided array of event-pointer arrays. The three
                                         * levels of indirection (event_t**, per-queue array*, outer
                                         * array*) are inherent to the static-allocation API design
                                         * and cannot be reduced without losing type safety. */
-                                       activert_queue_storage_t* queue_storages,
-                                       StaticQueue_t* queue_set_cb,
-                                       uint8_t* queue_set_storage)
+    activert_queue_storage_t* queue_storages,
+    StaticQueue_t* queue_set_cb,
+    uint8_t* queue_set_storage
+)
 {
     // Validate parameters
     ACTIVERT_ASSERT(active_storage != NULL);
@@ -335,7 +337,7 @@ activert_active_create_static_internal(activert_active_t* active_storage,
 
 #if ACTIVERT_ENABLE_NAMES
     me->name = name;
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
 
     me->dispatch                     = dispatch;
     me->priority                     = priority;
@@ -452,17 +454,19 @@ activert_active_create_static_internal(activert_active_t* active_storage,
     // Create task
     size_t stack_depth = stack_size / sizeof(StackType_t);
 
-    me->thread = xTaskCreateStatic(activert_active_event_loop,
+    me->thread = xTaskCreateStatic(
+        activert_active_event_loop,
 #if ACTIVERT_ENABLE_NAMES
-                                   name ? name : "ActiveRT",
-#else
-                                   "ActiveRT",
-#endif
-                                   stack_depth,
-                                   me,  // Pass Active Object as parameter
-                                   priority + tskIDLE_PRIORITY,
-                                   stack,
-                                   task_cb);
+        name ? name : "ActiveRT",
+#else  /* ACTIVERT_ENABLE_NAMES */
+        "ActiveRT",
+#endif /* ACTIVERT_ENABLE_NAMES */
+        stack_depth,
+        me,  // Pass Active Object as parameter
+        priority + tskIDLE_PRIORITY,
+        stack,
+        task_cb
+    );
 
     if (me->thread == NULL)
     {
@@ -480,14 +484,16 @@ activert_active_create_static_internal(activert_active_t* active_storage,
 
 #if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
-    printf("activert_active_create_static_internal: Created Active Object '%s'\n",
-           name ? name : "unnamed");
-    #endif
-#endif
+    printf(
+        "activert_active_create_static_internal: Created Active Object '%s'\n",
+        name ? name : "unnamed"
+    );
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
 
 #if ACTIVERT_ENABLE_STATS
     activert_stats_register_active(me);
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     return me;
 }
@@ -495,60 +501,65 @@ activert_active_create_static_internal(activert_active_t* active_storage,
 /**
  * Public API: Create Active Object without notifications
  */
-activert_active_t* activert_active_create_static(const char* name,
-                                                 activert_dispatch_handler_t dispatch,
-                                                 UBaseType_t priority,
-                                                 StackType_t* stack,
-                                                 size_t stack_size,
-                                                 StaticTask_t* task_cb,
-                                                 activert_queue_config_t* queue_configs,
-                                                 uint8_t num_queues,
-                                                 StaticQueue_t* queue_cbs,
-                                                 /* cppcheck-suppress misra-c2012-18.5
+activert_active_t* activert_active_create_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues,
+    StaticQueue_t* queue_cbs,
+    /* cppcheck-suppress misra-c2012-18.5
                                                   * Deviation: see activert_active_create_static. */
-                                                 activert_queue_storage_t* queue_storages,
-                                                 StaticQueue_t* queue_set_cb,
-                                                 uint8_t* queue_set_storage,
-                                                 activert_active_t* active_storage,
-                                                 activert_queue_t* queue_structs)
+    activert_queue_storage_t* queue_storages,
+    StaticQueue_t* queue_set_cb,
+    uint8_t* queue_set_storage,
+    activert_active_t* active_storage,
+    activert_queue_t* queue_structs
+)
 {
-    return activert_active_create_static_internal(active_storage,
-                                                  queue_structs,
-                                                  name,
-                                                  dispatch,
-                                                  NULL,  // No notification handler
-                                                  NULL,  // No semaphore
-                                                  priority,
-                                                  stack,
-                                                  stack_size,
-                                                  task_cb,
-                                                  queue_configs,
-                                                  num_queues,
-                                                  queue_cbs,
-                                                  queue_storages,
-                                                  queue_set_cb,
-                                                  queue_set_storage);
+    return activert_active_create_static_internal(
+        active_storage,
+        queue_structs,
+        name,
+        dispatch,
+        NULL,  // No notification handler
+        NULL,  // No semaphore
+        priority,
+        stack,
+        stack_size,
+        task_cb,
+        queue_configs,
+        num_queues,
+        queue_cbs,
+        queue_storages,
+        queue_set_cb,
+        queue_set_storage
+    );
 }
 
-activert_active_t*
-activert_active_create_with_notification_static(const char* name,
-                                                activert_dispatch_handler_t dispatch,
-                                                activert_notify_handler_t notification_handler,
-                                                UBaseType_t priority,
-                                                StackType_t* stack,
-                                                size_t stack_size,
-                                                StaticTask_t* task_cb,
-                                                activert_queue_config_t* queue_configs,
-                                                uint8_t num_queues,
-                                                StaticQueue_t* queue_cbs,
-                                                /* cppcheck-suppress misra-c2012-18.5
+activert_active_t* activert_active_create_with_notification_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_notify_handler_t notification_handler,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues,
+    StaticQueue_t* queue_cbs,
+    /* cppcheck-suppress misra-c2012-18.5
                                                  * Deviation: see activert_active_create_static. */
-                                                activert_queue_storage_t* queue_storages,
-                                                StaticQueue_t* queue_set_cb,
-                                                uint8_t* queue_set_storage,
-                                                StaticSemaphore_t* notify_sem_cb,
-                                                activert_active_t* active_storage,
-                                                activert_queue_t* queue_structs)
+    activert_queue_storage_t* queue_storages,
+    StaticQueue_t* queue_set_cb,
+    uint8_t* queue_set_storage,
+    StaticSemaphore_t* notify_sem_cb,
+    activert_active_t* active_storage,
+    activert_queue_t* queue_structs
+)
 {
     // If no queues, create minimal Active Object (notification-only)
     // These use xTaskNotify directly, not semaphores
@@ -563,7 +574,7 @@ activert_active_create_with_notification_static(const char* name,
 
 #if ACTIVERT_ENABLE_NAMES
         me->name = name;
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
 
         me->dispatch             = dispatch;  // Can be NULL for notification-only
         me->priority             = priority;
@@ -575,17 +586,19 @@ activert_active_create_with_notification_static(const char* name,
         // Create task
         size_t stack_depth = stack_size / sizeof(StackType_t);
 
-        me->thread = xTaskCreateStatic(activert_active_event_loop,
+        me->thread = xTaskCreateStatic(
+            activert_active_event_loop,
 #if ACTIVERT_ENABLE_NAMES
-                                       name ? name : "ActiveRT",
-#else
-                                       "ActiveRT",
-#endif
-                                       stack_depth,
-                                       me,
-                                       priority + tskIDLE_PRIORITY,
-                                       stack,
-                                       task_cb);
+            name ? name : "ActiveRT",
+#else  /* ACTIVERT_ENABLE_NAMES */
+            "ActiveRT",
+#endif /* ACTIVERT_ENABLE_NAMES */
+            stack_depth,
+            me,
+            priority + tskIDLE_PRIORITY,
+            stack,
+            task_cb
+        );
 
         if (me->thread == NULL)
         {
@@ -594,29 +607,31 @@ activert_active_create_with_notification_static(const char* name,
 
 #if ACTIVERT_ENABLE_STATS
         activert_stats_register_active(me);
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
         return me;
     }
 
     // Create with queues and notification handler
     // Call internal function to set notification handler BEFORE task starts
-    return activert_active_create_static_internal(active_storage,
-                                                  queue_structs,
-                                                  name,
-                                                  dispatch,
-                                                  notification_handler,
-                                                  notify_sem_cb,
-                                                  priority,
-                                                  stack,
-                                                  stack_size,
-                                                  task_cb,
-                                                  queue_configs,
-                                                  num_queues,
-                                                  queue_cbs,
-                                                  queue_storages,
-                                                  queue_set_cb,
-                                                  queue_set_storage);
+    return activert_active_create_static_internal(
+        active_storage,
+        queue_structs,
+        name,
+        dispatch,
+        notification_handler,
+        notify_sem_cb,
+        priority,
+        stack,
+        stack_size,
+        task_cb,
+        queue_configs,
+        num_queues,
+        queue_cbs,
+        queue_storages,
+        queue_set_cb,
+        queue_set_storage
+    );
 }
 
 /*******************************************************************************
@@ -654,21 +669,23 @@ static void activert_active_loop_runner(void* pvParameters)
 
 #if ACTIVERT_ENABLE_STATS
         me->stats.events_processed++;
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
     }
 }
 
 /**
  * Create a loop task with static allocation (zero heap)
  */
-activert_active_t* activert_active_create_loop_static(const char* name,
-                                                      activert_dispatch_handler_t dispatch,
-                                                      activert_loop_fn_t loop_fn,
-                                                      UBaseType_t priority,
-                                                      StackType_t* stack,
-                                                      size_t stack_size,
-                                                      StaticTask_t* task_cb,
-                                                      activert_active_t* active_storage)
+activert_active_t* activert_active_create_loop_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_loop_fn_t loop_fn,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_active_t* active_storage
+)
 {
     ACTIVERT_ASSERT(active_storage != NULL);
     ACTIVERT_ASSERT(loop_fn != NULL);
@@ -681,9 +698,9 @@ activert_active_t* activert_active_create_loop_static(const char* name,
 
 #if ACTIVERT_ENABLE_NAMES
     me->name = name;
-#else
+#else  /* ACTIVERT_ENABLE_NAMES */
     (void)name;
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
 
     me->dispatch             = dispatch;
     me->loop_fn              = loop_fn;
@@ -695,17 +712,19 @@ activert_active_t* activert_active_create_loop_static(const char* name,
 
     size_t stack_depth = stack_size / sizeof(StackType_t);
 
-    me->thread = xTaskCreateStatic(activert_active_loop_runner,
+    me->thread = xTaskCreateStatic(
+        activert_active_loop_runner,
 #if ACTIVERT_ENABLE_NAMES
-                                   name ? name : "ActiveRT",
-#else
-                                   "ActiveRT",
-#endif
-                                   stack_depth,
-                                   me,
-                                   priority + tskIDLE_PRIORITY,
-                                   stack,
-                                   task_cb);
+        name ? name : "ActiveRT",
+#else  /* ACTIVERT_ENABLE_NAMES */
+        "ActiveRT",
+#endif /* ACTIVERT_ENABLE_NAMES */
+        stack_depth,
+        me,
+        priority + tskIDLE_PRIORITY,
+        stack,
+        task_cb
+    );
 
     if (me->thread == NULL)
     {
@@ -715,12 +734,12 @@ activert_active_t* activert_active_create_loop_static(const char* name,
 #if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
     printf("activert_active_create_loop_static: Created loop task '%s'\n", name ? name : "unnamed");
-    #endif
-#endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
 
 #if ACTIVERT_ENABLE_STATS
     activert_stats_register_active(me);
-#endif
+#endif /* ACTIVERT_ENABLE_STATS */
 
     return me;
 }
@@ -731,12 +750,14 @@ activert_active_t* activert_active_create_loop_static(const char* name,
 
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
 
-activert_active_t* activert_active_create_dynamic(const char* name,
-                                                  activert_dispatch_handler_t dispatch,
-                                                  UBaseType_t priority,
-                                                  size_t stack_size,
-                                                  activert_queue_config_t* queue_configs,
-                                                  uint8_t num_queues)
+activert_active_t* activert_active_create_dynamic(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    UBaseType_t priority,
+    size_t stack_size,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues
+)
 {
     ACTIVERT_ASSERT(dispatch != NULL);
     ACTIVERT_ASSERT(stack_size > 0);
@@ -803,16 +824,18 @@ activert_active_t* activert_active_create_dynamic(const char* name,
     }
 
     // Create task
-    if (xTaskCreate(activert_active_event_loop,
+    if (xTaskCreate(
+            activert_active_event_loop,
     #if ACTIVERT_ENABLE_NAMES
-                    name ? name : "ActiveRT",
-    #else
-                    "ActiveRT",
-    #endif
-                    stack_size / sizeof(StackType_t),
-                    me,
-                    priority + tskIDLE_PRIORITY,
-                    &me->thread) != pdPASS)
+            name ? name : "ActiveRT",
+    #else  /* ACTIVERT_ENABLE_NAMES */
+            "ActiveRT",
+    #endif /* ACTIVERT_ENABLE_NAMES */
+            stack_size / sizeof(StackType_t),
+            me,
+            priority + tskIDLE_PRIORITY,
+            &me->thread
+        ) != pdPASS)
     {
         if (me->queue_set)
         {
@@ -828,19 +851,20 @@ activert_active_t* activert_active_create_dynamic(const char* name,
 
     #if ACTIVERT_ENABLE_STATS
     activert_stats_register_active(me);
-    #endif
+    #endif /* ACTIVERT_ENABLE_STATS */
 
     return me;
 }
 
-activert_active_t*
-activert_active_create_with_notification_dynamic(const char* name,
-                                                 activert_dispatch_handler_t dispatch,
-                                                 activert_notify_handler_t notification_handler,
-                                                 UBaseType_t priority,
-                                                 size_t stack_size,
-                                                 activert_queue_config_t* queue_configs,
-                                                 uint8_t num_queues)
+activert_active_t* activert_active_create_with_notification_dynamic(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_notify_handler_t notification_handler,
+    UBaseType_t priority,
+    size_t stack_size,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues
+)
 {
     activert_active_t* me;
 
@@ -858,7 +882,7 @@ activert_active_create_with_notification_dynamic(const char* name,
 
     #if ACTIVERT_ENABLE_NAMES
         me->name = name;
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
         me->dispatch             = dispatch;
         me->priority             = priority;
@@ -866,16 +890,18 @@ activert_active_create_with_notification_dynamic(const char* name,
         me->is_static            = false;
         me->notification.handler = notification_handler;
 
-        if (xTaskCreate(activert_active_event_loop,
+        if (xTaskCreate(
+                activert_active_event_loop,
     #if ACTIVERT_ENABLE_NAMES
-                        name ? name : "ActiveRT",
-    #else
-                        "ActiveRT",
-    #endif
-                        stack_size / sizeof(StackType_t),
-                        me,
-                        priority + tskIDLE_PRIORITY,
-                        &me->thread) != pdPASS)
+                name ? name : "ActiveRT",
+    #else  /* ACTIVERT_ENABLE_NAMES */
+                "ActiveRT",
+    #endif /* ACTIVERT_ENABLE_NAMES */
+                stack_size / sizeof(StackType_t),
+                me,
+                priority + tskIDLE_PRIORITY,
+                &me->thread
+            ) != pdPASS)
         {
             ACTIVERT_FREE(me);
             return NULL;
@@ -883,13 +909,14 @@ activert_active_create_with_notification_dynamic(const char* name,
 
     #if ACTIVERT_ENABLE_STATS
         activert_stats_register_active(me);
-    #endif
+    #endif /* ACTIVERT_ENABLE_STATS */
 
         return me;
     }
 
     me = activert_active_create_dynamic(
-        name, dispatch, priority, stack_size, queue_configs, num_queues);
+        name, dispatch, priority, stack_size, queue_configs, num_queues
+    );
 
     if (me)
     {
@@ -969,7 +996,7 @@ const char* activert_active_get_name(activert_active_t* me)
     ACTIVERT_ASSERT(me != NULL);
     return me->name;
 }
-#endif
+#endif /* ACTIVERT_ENABLE_NAMES */
 
 UBaseType_t activert_active_get_priority(activert_active_t* me)
 {
@@ -1009,7 +1036,7 @@ void activert_active_reset_stats(activert_active_t* me)
     me->stats.total_processing_time = 0;
     me->stats.max_processing_time   = 0;
     me->stats.slowest_signal        = 0;
-    #endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
     // Reset queue stats
     for (uint8_t i = 0; i < me->queue_count; i++)
@@ -1025,9 +1052,9 @@ void activert_active_print_stats(activert_active_t* me)
     printf("================================================================\n");
     #if ACTIVERT_ENABLE_NAMES
     printf("Active Object: %s\n", me->name ? me->name : "unnamed");
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
     printf("Active Object\n");
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
     printf("================================================================\n");
     printf("Priority:       %u\n", me->priority);
     printf("Queue count:    %u\n", me->queue_count);
@@ -1045,28 +1072,36 @@ void activert_active_print_stats(activert_active_t* me)
     {
         TickType_t avg_time = me->stats.total_processing_time / me->stats.events_processed;
         printf("  Avg time:     %u ticks\n", (uint32_t)avg_time);
-        printf("  Max time:     %u ticks (sig %u)\n",
-               (uint32_t)me->stats.max_processing_time,
-               me->stats.slowest_signal);
+        printf(
+            "  Max time:     %u ticks (sig %u)\n",
+            (uint32_t)me->stats.max_processing_time,
+            me->stats.slowest_signal
+        );
     }
-    #endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
     // Print queue stats
     for (uint8_t i = 0; i < me->queue_count; i++)
     {
         printf("\nQueue %u:\n", i);
         printf("  Length:       %zu\n", me->queues[i].queue_length);
-        printf("  Posts:        %u (%u OK, %u failed)\n",
-               me->queues[i].stats.posts_attempted,
-               me->queues[i].stats.posts_succeeded,
-               me->queues[i].stats.posts_failed);
-        printf("  Depth:        %u / %zu (current / max)\n",
-               me->queues[i].stats.current_depth,
-               me->queues[i].queue_length);
-        printf("  Peak:         %u / %zu (%u%%)\n",
-               me->queues[i].stats.peak_depth,
-               me->queues[i].queue_length,
-               (uint32_t)((me->queues[i].stats.peak_depth * 100U) / me->queues[i].queue_length));
+        printf(
+            "  Posts:        %u (%u OK, %u failed)\n",
+            me->queues[i].stats.posts_attempted,
+            me->queues[i].stats.posts_succeeded,
+            me->queues[i].stats.posts_failed
+        );
+        printf(
+            "  Depth:        %u / %zu (current / max)\n",
+            me->queues[i].stats.current_depth,
+            me->queues[i].queue_length
+        );
+        printf(
+            "  Peak:         %u / %zu (%u%%)\n",
+            me->queues[i].stats.peak_depth,
+            me->queues[i].queue_length,
+            (uint32_t)((me->queues[i].stats.peak_depth * 100U) / me->queues[i].queue_length)
+        );
     }
 
     printf("================================================================\n");

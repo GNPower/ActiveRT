@@ -58,7 +58,7 @@ static activert_active_t* find_active(const char* arg)
             return ao;
         }
     }
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
     return NULL;
 }
@@ -93,7 +93,7 @@ static activert_event_pool_t* find_pool(const char* arg)
             return pool;
         }
     }
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
     return NULL;
 }
@@ -110,16 +110,21 @@ void activert_cli_cmd_summary(const char* args)
     ACTIVERT_CLI_PRINTF("=======================");
     ACTIVERT_CLI_PRINTF("Active Objects:   %u", (unsigned int)activert_stats_get_active_count());
     ACTIVERT_CLI_PRINTF("Event Pools:      %u", (unsigned int)activert_stats_get_pool_count());
-    ACTIVERT_CLI_PRINTF("Events Processed: %u",
-                        (unsigned int)activert_stats_get_total_events_processed());
-    ACTIVERT_CLI_PRINTF("Events Dropped:   %u",
-                        (unsigned int)activert_stats_get_total_events_dropped());
-    ACTIVERT_CLI_PRINTF("Notifications:    %u",
-                        (unsigned int)activert_stats_get_total_notifications());
-    ACTIVERT_CLI_PRINTF("Pool Allocs:      %u",
-                        (unsigned int)activert_stats_get_total_pool_allocs());
-    ACTIVERT_CLI_PRINTF("Pool Failures:    %u",
-                        (unsigned int)activert_stats_get_total_pool_failures());
+    ACTIVERT_CLI_PRINTF(
+        "Events Processed: %u", (unsigned int)activert_stats_get_total_events_processed()
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Events Dropped:   %u", (unsigned int)activert_stats_get_total_events_dropped()
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Notifications:    %u", (unsigned int)activert_stats_get_total_notifications()
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Pool Allocs:      %u", (unsigned int)activert_stats_get_total_pool_allocs()
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Pool Failures:    %u", (unsigned int)activert_stats_get_total_pool_failures()
+    );
 
     activert_health_check_t health;
     activert_stats_health_check(&health);
@@ -134,9 +139,11 @@ void activert_cli_cmd_summary(const char* args)
             ACTIVERT_CLI_PRINTF("Health: WARNING (%u)", (unsigned int)health.warnings);
             break;
         case ACTIVERT_HEALTH_CRITICAL:
-            ACTIVERT_CLI_PRINTF("Health: CRITICAL (%u warnings, %u critical)",
-                                (unsigned int)health.warnings,
-                                (unsigned int)health.criticals);
+            ACTIVERT_CLI_PRINTF(
+                "Health: CRITICAL (%u warnings, %u critical)",
+                (unsigned int)health.warnings,
+                (unsigned int)health.criticals
+            );
             break;
         default:
             ACTIVERT_CLI_PRINTF("Health: UNKNOWN");
@@ -158,22 +165,25 @@ void activert_cli_cmd_list(const char* args)
         for (size_t i = 0; i < count; i++)
         {
             activert_event_pool_t* pool = activert_stats_get_pool(i);
-            if (pool == NULL) {
+            if (pool == NULL)
+            {
                 continue;
             }
 
     #if ACTIVERT_ENABLE_NAMES
             const char* name = pool->name ? pool->name : "unnamed";
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
             const char* name = "-";
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
-            ACTIVERT_CLI_PRINTF("  [%u] %-16s  size: %u  allocs: %u  fails: %u",
-                                (unsigned int)i,
-                                name,
-                                (unsigned int)pool->pool_size,
-                                (unsigned int)pool->stats.allocs_succeeded,
-                                (unsigned int)pool->stats.allocs_failed);
+            ACTIVERT_CLI_PRINTF(
+                "  [%u] %-16s  size: %u  allocs: %u  fails: %u",
+                (unsigned int)i,
+                name,
+                (unsigned int)pool->pool_size,
+                (unsigned int)pool->stats.allocs_succeeded,
+                (unsigned int)pool->stats.allocs_failed
+            );
         }
     }
     else
@@ -186,22 +196,25 @@ void activert_cli_cmd_list(const char* args)
         for (size_t i = 0; i < count; i++)
         {
             activert_active_t* ao = activert_stats_get_active(i);
-            if (ao == NULL) {
+            if (ao == NULL)
+            {
                 continue;
             }
 
     #if ACTIVERT_ENABLE_NAMES
             const char* name = ao->name ? ao->name : "unnamed";
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
             const char* name = "-";
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
-            ACTIVERT_CLI_PRINTF("  [%u] %-16s  pri: %u  events: %u  dropped: %u",
-                                (unsigned int)i,
-                                name,
-                                (unsigned int)ao->priority,
-                                (unsigned int)ao->stats.events_processed,
-                                (unsigned int)ao->stats.events_dropped);
+            ACTIVERT_CLI_PRINTF(
+                "  [%u] %-16s  pri: %u  events: %u  dropped: %u",
+                (unsigned int)i,
+                name,
+                (unsigned int)ao->priority,
+                (unsigned int)ao->stats.events_processed,
+                (unsigned int)ao->stats.events_dropped
+            );
         }
     }
 }
@@ -224,9 +237,9 @@ void activert_cli_cmd_show(const char* args)
 
     #if ACTIVERT_ENABLE_NAMES
     const char* name = ao->name ? ao->name : "unnamed";
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
     const char* name = "AO";
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
     ACTIVERT_CLI_PRINTF("Active Object: %s", name);
     ACTIVERT_CLI_PRINTF("================================");
@@ -240,10 +253,12 @@ void activert_cli_cmd_show(const char* args)
 
     #if ACTIVERT_ENABLE_TIMING_STATS
     ACTIVERT_CLI_PRINTF("  Avg time:     %u ticks", (unsigned int)ao->stats.avg_processing_time);
-    ACTIVERT_CLI_PRINTF("  Max time:     %u ticks (sig %u)",
-                        (unsigned int)ao->stats.max_processing_time,
-                        (unsigned int)ao->stats.slowest_signal);
-    #endif
+    ACTIVERT_CLI_PRINTF(
+        "  Max time:     %u ticks (sig %u)",
+        (unsigned int)ao->stats.max_processing_time,
+        (unsigned int)ao->stats.slowest_signal
+    );
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
     // Print queue details
     for (uint8_t q = 0; q < ao->queue_count; q++)
@@ -251,10 +266,12 @@ void activert_cli_cmd_show(const char* args)
         ACTIVERT_CLI_PRINTF("");
         ACTIVERT_CLI_PRINTF("Queue %u:", (unsigned int)q);
         ACTIVERT_CLI_PRINTF("  Length:       %u", (unsigned int)ao->queues[q].queue_length);
-        ACTIVERT_CLI_PRINTF("  Posts:        %u (%u OK, %u failed)",
-                            (unsigned int)ao->queues[q].stats.posts_attempted,
-                            (unsigned int)ao->queues[q].stats.posts_succeeded,
-                            (unsigned int)ao->queues[q].stats.posts_failed);
+        ACTIVERT_CLI_PRINTF(
+            "  Posts:        %u (%u OK, %u failed)",
+            (unsigned int)ao->queues[q].stats.posts_attempted,
+            (unsigned int)ao->queues[q].stats.posts_succeeded,
+            (unsigned int)ao->queues[q].stats.posts_failed
+        );
         ACTIVERT_CLI_PRINTF("  Current:      %u", (unsigned int)ao->queues[q].stats.current_depth);
         ACTIVERT_CLI_PRINTF("  Peak:         %u", (unsigned int)ao->queues[q].stats.peak_depth);
     }
@@ -283,26 +300,34 @@ void activert_cli_cmd_pool(const char* args)
 
     #if ACTIVERT_ENABLE_NAMES
     const char* name = pool->name ? pool->name : "unnamed";
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
     const char* name = "Pool";
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
 
     ACTIVERT_CLI_PRINTF("Event Pool: %s", name);
     ACTIVERT_CLI_PRINTF("================================");
-    ACTIVERT_CLI_PRINTF("Size:           %u events x %u bytes = %u bytes",
-                        (unsigned int)pool->pool_size,
-                        (unsigned int)pool->event_size,
-                        (unsigned int)(pool->pool_size * pool->event_size));
-    ACTIVERT_CLI_PRINTF("Current:        %u / %u",
-                        (unsigned int)pool->stats.current_allocated,
-                        (unsigned int)pool->pool_size);
-    ACTIVERT_CLI_PRINTF("Peak:           %u / %u",
-                        (unsigned int)pool->stats.peak_allocated,
-                        (unsigned int)pool->pool_size);
-    ACTIVERT_CLI_PRINTF("Allocs:         %u attempted, %u succeeded, %u failed",
-                        (unsigned int)pool->stats.allocs_attempted,
-                        (unsigned int)pool->stats.allocs_succeeded,
-                        (unsigned int)pool->stats.allocs_failed);
+    ACTIVERT_CLI_PRINTF(
+        "Size:           %u events x %u bytes = %u bytes",
+        (unsigned int)pool->pool_size,
+        (unsigned int)pool->event_size,
+        (unsigned int)(pool->pool_size * pool->event_size)
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Current:        %u / %u",
+        (unsigned int)pool->stats.current_allocated,
+        (unsigned int)pool->pool_size
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Peak:           %u / %u",
+        (unsigned int)pool->stats.peak_allocated,
+        (unsigned int)pool->pool_size
+    );
+    ACTIVERT_CLI_PRINTF(
+        "Allocs:         %u attempted, %u succeeded, %u failed",
+        (unsigned int)pool->stats.allocs_attempted,
+        (unsigned int)pool->stats.allocs_succeeded,
+        (unsigned int)pool->stats.allocs_failed
+    );
     ACTIVERT_CLI_PRINTF("Frees:          %u", (unsigned int)pool->stats.frees);
 
     if (pool->stats.allocs_attempted > 0U)
@@ -415,23 +440,26 @@ void activert_cli_cmd_perf(const char* args)
     {
         ACTIVERT_CLI_PRINTF("Slowest Task:     %s", perf.slowest_task_name);
     }
-        #endif
+        #endif /* ACTIVERT_ENABLE_NAMES */
 
     activert_active_t* busiest = activert_stats_find_busiest_active();
     if (busiest != NULL)
     {
         #if ACTIVERT_ENABLE_NAMES
-        ACTIVERT_CLI_PRINTF("Busiest Task:     %s (%u events)",
-                            busiest->name ? busiest->name : "unnamed",
-                            (unsigned int)busiest->stats.events_processed);
-        #else
-        ACTIVERT_CLI_PRINTF("Busiest Task:     %u events",
-                            (unsigned int)busiest->stats.events_processed);
-        #endif
+        ACTIVERT_CLI_PRINTF(
+            "Busiest Task:     %s (%u events)",
+            busiest->name ? busiest->name : "unnamed",
+            (unsigned int)busiest->stats.events_processed
+        );
+        #else  /* ACTIVERT_ENABLE_NAMES */
+        ACTIVERT_CLI_PRINTF(
+            "Busiest Task:     %u events", (unsigned int)busiest->stats.events_processed
+        );
+        #endif /* ACTIVERT_ENABLE_NAMES */
     }
-    #else
+    #else  /* ACTIVERT_ENABLE_TIMING_STATS */
     ACTIVERT_CLI_PRINTF("Timing statistics disabled (ACTIVERT_ENABLE_TIMING_STATS=0)");
-    #endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 }
 
 void activert_cli_cmd_report(const char* args)
@@ -449,20 +477,23 @@ void activert_cli_cmd_report(const char* args)
         for (size_t i = 0; i < pool_count; i++)
         {
             activert_event_pool_t* pool = activert_stats_get_pool(i);
-            if (pool == NULL) {
+            if (pool == NULL)
+            {
                 continue;
             }
     #if ACTIVERT_ENABLE_NAMES
             const char* name = pool->name ? pool->name : "unnamed";
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
             const char* name = "-";
-    #endif
-            ACTIVERT_CLI_PRINTF("  [%u] %-16s  size: %u  allocs: %u  fails: %u",
-                                (unsigned int)i,
-                                name,
-                                (unsigned int)pool->pool_size,
-                                (unsigned int)pool->stats.allocs_succeeded,
-                                (unsigned int)pool->stats.allocs_failed);
+    #endif /* ACTIVERT_ENABLE_NAMES */
+            ACTIVERT_CLI_PRINTF(
+                "  [%u] %-16s  size: %u  allocs: %u  fails: %u",
+                (unsigned int)i,
+                name,
+                (unsigned int)pool->pool_size,
+                (unsigned int)pool->stats.allocs_succeeded,
+                (unsigned int)pool->stats.allocs_failed
+            );
         }
     }
     ACTIVERT_CLI_PRINTF("");

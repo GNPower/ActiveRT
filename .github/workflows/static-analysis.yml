@@ -24,7 +24,7 @@ jobs:
         with:
           clang-format-version: "17"
           check-path: "."
-          exclude-regex: "(build|_deps|test/platform_stubs)"
+          exclude-regex: "(build|_deps|test/platform_stubs|test/posix_config|tools/misra)"
           fallback-style: "none"   # Fail if .clang-format is missing
 
   # -------------------------------------------------------------------------

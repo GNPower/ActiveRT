@@ -30,7 +30,7 @@ endif()
 # Doxygen target
 ################################################################################
 
-set(DOXYGEN_OUTPUT_DIR  "${CMAKE_CURRENT_BINARY_DIR}/doxygen")
+set(DOXYGEN_OUTPUT_DIR  "${CMAKE_BINARY_DIR}/doxygen")
 set(DOXYFILE_IN         "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
 set(DOXYFILE_OUT        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
@@ -48,7 +48,7 @@ add_custom_target(doxygen
 ################################################################################
 
 set(SPHINX_SOURCE_DIR   "${CMAKE_CURRENT_SOURCE_DIR}")
-set(SPHINX_OUTPUT_DIR   "${CMAKE_CURRENT_BINARY_DIR}/html")
+set(SPHINX_OUTPUT_DIR   "${CMAKE_BINARY_DIR}/html")
 set(SPHINX_CONF_DIR     "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Pass the Doxygen XML location to Sphinx via an environment variable

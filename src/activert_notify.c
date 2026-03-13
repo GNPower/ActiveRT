@@ -53,16 +53,18 @@ void activert_active_notify(activert_active_t* me, uint32_t notify_bits)
 
 #if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
-    printf("activert_active_notify: Notified task '%s' with bits 0x%08X\n",
-           me->name ? me->name : "unnamed",
-           (unsigned int)notify_bits);
-    #endif
-#endif
+    printf(
+        "activert_active_notify: Notified task '%s' with bits 0x%08X\n",
+        me->name ? me->name : "unnamed",
+        (unsigned int)notify_bits
+    );
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
 }
 
-void activert_active_notify_from_isr(activert_active_t* me,
-                                     uint32_t notify_bits,
-                                     BaseType_t* pxHigherPriorityTaskWoken)
+void activert_active_notify_from_isr(
+    activert_active_t* me, uint32_t notify_bits, BaseType_t* pxHigherPriorityTaskWoken
+)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(me->notification.handler != NULL);
@@ -171,9 +173,9 @@ void activert_active_print_notification_stats(activert_active_t* me)
     printf("================================================================\n");
     #if ACTIVERT_ENABLE_NAMES
     printf("Notification Statistics: %s\n", me->name ? me->name : "unnamed");
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
     printf("Notification Statistics\n");
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
     printf("================================================================\n");
     printf("Notifications received: %u\n", me->stats.notifications_received);
     printf("Notification mask:      0x%08X\n", (unsigned int)me->notification.notify_mask);

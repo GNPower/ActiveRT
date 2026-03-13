@@ -54,11 +54,13 @@
  *       ACTIVERT_POOL_OVERFLOW_DROP
  *   );
  */
-activert_event_pool_t* activert_event_pool_create(const char* name,
-                                                  void* pool_memory,
-                                                  size_t event_size,
-                                                  size_t pool_size,
-                                                  activert_pool_overflow_policy_t policy);
+activert_event_pool_t* activert_event_pool_create(
+    const char* name,
+    void* pool_memory,
+    size_t event_size,
+    size_t pool_size,
+    activert_pool_overflow_policy_t policy
+);
 
 /**
  * Initialize an event pool in-place using fully static storage
@@ -80,13 +82,15 @@ activert_event_pool_t* activert_event_pool_create(const char* name,
  * @param pool_size     Number of events in pool
  * @param policy        Overflow policy
  */
-void activert_event_pool_init_static(activert_event_pool_t* pool,
-                                     const char* name,
-                                     void* pool_memory,
-                                     uint8_t* bitmap,
-                                     size_t event_size,
-                                     size_t pool_size,
-                                     activert_pool_overflow_policy_t policy);
+void activert_event_pool_init_static(
+    activert_event_pool_t* pool,
+    const char* name,
+    void* pool_memory,
+    uint8_t* bitmap,
+    size_t event_size,
+    size_t pool_size,
+    activert_pool_overflow_policy_t policy
+);
 
 /**
  * Create a dynamic event pool
@@ -109,10 +113,9 @@ void activert_event_pool_init_static(activert_event_pool_t* pool,
  * Note: Requires ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1
  */
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
-activert_event_pool_t* activert_event_pool_create_dynamic(const char* name,
-                                                          size_t event_size,
-                                                          size_t pool_size,
-                                                          activert_pool_overflow_policy_t policy);
+activert_event_pool_t* activert_event_pool_create_dynamic(
+    const char* name, size_t event_size, size_t pool_size, activert_pool_overflow_policy_t policy
+);
 
 /**
  * Destroy a dynamic event pool
@@ -340,13 +343,15 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool);
 #define ACTIVERT_EVENT_POOL_INIT(pool_name, event_type, count, policy) \
     do                                                                 \
     {                                                                  \
-        activert_event_pool_init_static(&pool_name##_struct,           \
-                                        #pool_name,                    \
-                                        pool_name##_memory,            \
-                                        pool_name##_bitmap,            \
-                                        sizeof(event_type),            \
-                                        (count),                       \
-                                        (policy));                     \
+        activert_event_pool_init_static(                               \
+            &pool_name##_struct,                                       \
+            #pool_name,                                                \
+            pool_name##_memory,                                        \
+            pool_name##_bitmap,                                        \
+            sizeof(event_type),                                        \
+            (count),                                                   \
+            (policy)                                                   \
+        );                                                             \
         pool_name = &pool_name##_struct;                               \
     } while (0)
 

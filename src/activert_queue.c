@@ -78,19 +78,21 @@ uint32_t activert_queue_flush(activert_active_t* me, uint8_t queue_index)
 
 #if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
-    printf("activert_queue_flush: Flushed %u events from queue %u in task '%s'\n",
-           flushed,
-           queue_index,
-           me->name ? me->name : "unnamed");
-    #endif
-#endif
+    printf(
+        "activert_queue_flush: Flushed %u events from queue %u in task '%s'\n",
+        flushed,
+        queue_index,
+        me->name ? me->name : "unnamed"
+    );
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
 
     return flushed;
 }
 
-int activert_queue_get_config(activert_active_t* me,
-                              uint8_t queue_index,
-                              activert_queue_config_t* config)
+int activert_queue_get_config(
+    activert_active_t* me, uint8_t queue_index, activert_queue_config_t* config
+)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(config != NULL);
@@ -122,9 +124,9 @@ void activert_queue_print_all_stats(activert_active_t* me)
     printf("================================================================\n");
     #if ACTIVERT_ENABLE_NAMES
     printf("Queue Statistics: %s\n", me->name ? me->name : "unnamed");
-    #else
+    #else  /* ACTIVERT_ENABLE_NAMES */
     printf("Queue Statistics\n");
-    #endif
+    #endif /* ACTIVERT_ENABLE_NAMES */
     printf("================================================================\n");
 
     for (uint8_t i = 0; i < me->queue_count; i++)
@@ -151,10 +153,12 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
     }
     else
     {
-        printf("  Signals:      %u - %u (%u signals)\n",
-               (unsigned)queue->signal_base,
-               (unsigned)(queue->signal_base + queue->signal_count - 1U),
-               (unsigned)queue->signal_count);
+        printf(
+            "  Signals:      %u - %u (%u signals)\n",
+            (unsigned)queue->signal_base,
+            (unsigned)(queue->signal_base + queue->signal_count - 1U),
+            (unsigned)queue->signal_count
+        );
     }
 
     printf("  Length:       %zu events\n", queue->queue_length);
@@ -163,18 +167,22 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
     UBaseType_t current_depth = uxQueueMessagesWaiting(queue->handle);
     UBaseType_t free_space    = uxQueueSpacesAvailable(queue->handle);
 
-    printf("  Current:      %u / %zu (%u%%)\n",
-           current_depth,
-           queue->queue_length,
-           (uint32_t)((current_depth * 100U) / queue->queue_length));
+    printf(
+        "  Current:      %u / %zu (%u%%)\n",
+        current_depth,
+        queue->queue_length,
+        (uint32_t)((current_depth * 100U) / queue->queue_length)
+    );
 
     printf("  Free:         %u\n", free_space);
 
     // Statistics
-    printf("  Posts:        %u (%u OK, %u failed)\n",
-           queue->stats.posts_attempted,
-           queue->stats.posts_succeeded,
-           queue->stats.posts_failed);
+    printf(
+        "  Posts:        %u (%u OK, %u failed)\n",
+        queue->stats.posts_attempted,
+        queue->stats.posts_succeeded,
+        queue->stats.posts_failed
+    );
 
     if (queue->stats.posts_attempted > 0U)
     {
@@ -183,10 +191,12 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
         printf("  Success rate: %.2f%%\n", success_rate);
     }
 
-    printf("  Peak:         %u / %zu (%u%%)\n",
-           queue->stats.peak_depth,
-           queue->queue_length,
-           (uint32_t)((queue->stats.peak_depth * 100U) / queue->queue_length));
+    printf(
+        "  Peak:         %u / %zu (%u%%)\n",
+        queue->stats.peak_depth,
+        queue->queue_length,
+        (uint32_t)((queue->stats.peak_depth * 100U) / queue->queue_length)
+    );
 }
 
 uint8_t activert_queue_get_utilization(activert_active_t* me, uint8_t queue_index)

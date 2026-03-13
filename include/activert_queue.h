@@ -81,9 +81,9 @@ uint32_t activert_queue_flush(activert_active_t* me, uint8_t queue_index);
  * @param config        Output: queue configuration
  * @return              0 on success, -1 on error
  */
-int activert_queue_get_config(activert_active_t* me,
-                              uint8_t queue_index,
-                              activert_queue_config_t* config);
+int activert_queue_get_config(
+    activert_active_t* me, uint8_t queue_index, activert_queue_config_t* config
+);
 
 /*******************************************************************************
 * Queue Statistics Helpers

@@ -55,23 +55,25 @@
  * Note: Task starts automatically. Sends INIT_SIG event to dispatch handler.
  *       All memory is caller-provided (zero heap allocation).
  */
-activert_active_t* activert_active_create_static(const char* name,
-                                                 activert_dispatch_handler_t dispatch,
-                                                 UBaseType_t priority,
-                                                 StackType_t* stack,
-                                                 size_t stack_size,
-                                                 StaticTask_t* task_cb,
-                                                 activert_queue_config_t* queue_configs,
-                                                 uint8_t num_queues,
-                                                 StaticQueue_t* queue_cbs,
-                                                 /* cppcheck-suppress misra-c2012-18.5
+activert_active_t* activert_active_create_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues,
+    StaticQueue_t* queue_cbs,
+    /* cppcheck-suppress misra-c2012-18.5
                                                   * Deviation: see activert_active_create_static
                                                   * in src/activert_active.c. */
-                                                 activert_queue_storage_t* queue_storages,
-                                                 StaticQueue_t* queue_set_cb,
-                                                 uint8_t* queue_set_storage,
-                                                 activert_active_t* active_storage,
-                                                 activert_queue_t* queue_structs);
+    activert_queue_storage_t* queue_storages,
+    StaticQueue_t* queue_set_cb,
+    uint8_t* queue_set_storage,
+    activert_active_t* active_storage,
+    activert_queue_t* queue_structs
+);
 
 /**
  * Create Active Object with notification support (static allocation)
@@ -101,26 +103,27 @@ activert_active_t* activert_active_create_static(const char* name,
  *
  * Note: All memory is caller-provided (zero heap allocation).
  */
-activert_active_t*
-activert_active_create_with_notification_static(const char* name,
-                                                activert_dispatch_handler_t dispatch,
-                                                activert_notify_handler_t notification_handler,
-                                                UBaseType_t priority,
-                                                StackType_t* stack,
-                                                size_t stack_size,
-                                                StaticTask_t* task_cb,
-                                                activert_queue_config_t* queue_configs,
-                                                uint8_t num_queues,
-                                                StaticQueue_t* queue_cbs,
-                                                /* cppcheck-suppress misra-c2012-18.5
+activert_active_t* activert_active_create_with_notification_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_notify_handler_t notification_handler,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues,
+    StaticQueue_t* queue_cbs,
+    /* cppcheck-suppress misra-c2012-18.5
                                                  * Deviation: see activert_active_create_static
                                                  * in src/activert_active.c. */
-                                                activert_queue_storage_t* queue_storages,
-                                                StaticQueue_t* queue_set_cb,
-                                                uint8_t* queue_set_storage,
-                                                StaticSemaphore_t* notify_sem_cb,
-                                                activert_active_t* active_storage,
-                                                activert_queue_t* queue_structs);
+    activert_queue_storage_t* queue_storages,
+    StaticQueue_t* queue_set_cb,
+    uint8_t* queue_set_storage,
+    StaticSemaphore_t* notify_sem_cb,
+    activert_active_t* active_storage,
+    activert_queue_t* queue_structs
+);
 
 /*******************************************************************************
 * Loop Task Creation - Static Allocation
@@ -143,14 +146,16 @@ activert_active_create_with_notification_static(const char* name,
  * @param active_storage  Pre-allocated activert_active_t struct
  * @return                Pointer to Active Object, or NULL on error
  */
-activert_active_t* activert_active_create_loop_static(const char* name,
-                                                      activert_dispatch_handler_t dispatch,
-                                                      activert_loop_fn_t loop_fn,
-                                                      UBaseType_t priority,
-                                                      StackType_t* stack,
-                                                      size_t stack_size,
-                                                      StaticTask_t* task_cb,
-                                                      activert_active_t* active_storage);
+activert_active_t* activert_active_create_loop_static(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_loop_fn_t loop_fn,
+    UBaseType_t priority,
+    StackType_t* stack,
+    size_t stack_size,
+    StaticTask_t* task_cb,
+    activert_active_t* active_storage
+);
 
 /*******************************************************************************
 * Active Object Creation - Dynamic Allocation
@@ -171,12 +176,14 @@ activert_active_t* activert_active_create_loop_static(const char* name,
  * @param num_queues    Number of queues
  * @return              Pointer to Active Object, or NULL on error
  */
-activert_active_t* activert_active_create_dynamic(const char* name,
-                                                  activert_dispatch_handler_t dispatch,
-                                                  UBaseType_t priority,
-                                                  size_t stack_size,
-                                                  activert_queue_config_t* queue_configs,
-                                                  uint8_t num_queues);
+activert_active_t* activert_active_create_dynamic(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    UBaseType_t priority,
+    size_t stack_size,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues
+);
 
 /**
  * Create Active Object with notification support (dynamic allocation)
@@ -190,14 +197,15 @@ activert_active_t* activert_active_create_dynamic(const char* name,
  * @param num_queues            Number of queues (0 if notify-only)
  * @return                      Pointer to Active Object, or NULL on error
  */
-activert_active_t*
-activert_active_create_with_notification_dynamic(const char* name,
-                                                 activert_dispatch_handler_t dispatch,
-                                                 activert_notify_handler_t notification_handler,
-                                                 UBaseType_t priority,
-                                                 size_t stack_size,
-                                                 activert_queue_config_t* queue_configs,
-                                                 uint8_t num_queues);
+activert_active_t* activert_active_create_with_notification_dynamic(
+    const char* name,
+    activert_dispatch_handler_t dispatch,
+    activert_notify_handler_t notification_handler,
+    UBaseType_t priority,
+    size_t stack_size,
+    activert_queue_config_t* queue_configs,
+    uint8_t num_queues
+);
 
 /**
  * Destroy a dynamically allocated Active Object
@@ -301,9 +309,9 @@ int activert_active_post(activert_active_t* me, activert_event_t* event);
  *   // Post to queue 0 regardless of signal
  *   activert_active_post_to_queue(task, 0, &evt->base);
  */
-int activert_active_post_to_queue(activert_active_t* me,
-                                  uint8_t queue_index,
-                                  activert_event_t* event);
+int activert_active_post_to_queue(
+    activert_active_t* me, uint8_t queue_index, activert_event_t* event
+);
 
 /**
  * Post event from ISR context
@@ -328,9 +336,9 @@ int activert_active_post_to_queue(activert_active_t* me,
  *       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
  *   }
  */
-int activert_active_post_from_isr(activert_active_t* me,
-                                  activert_event_t* event,
-                                  BaseType_t* pxHigherPriorityTaskWoken);
+int activert_active_post_from_isr(
+    activert_active_t* me, activert_event_t* event, BaseType_t* pxHigherPriorityTaskWoken
+);
 
 /**
  * Post event to specific queue from ISR context
@@ -341,10 +349,12 @@ int activert_active_post_from_isr(activert_active_t* me,
  * @param pxHigherPriorityTaskWoken     FreeRTOS context switch flag
  * @return                              0 on success, -1 on failure
  */
-int activert_active_post_to_queue_from_isr(activert_active_t* me,
-                                           uint8_t queue_index,
-                                           activert_event_t* event,
-                                           BaseType_t* pxHigherPriorityTaskWoken);
+int activert_active_post_to_queue_from_isr(
+    activert_active_t* me,
+    uint8_t queue_index,
+    activert_event_t* event,
+    BaseType_t* pxHigherPriorityTaskWoken
+);
 
 /*******************************************************************************
 * Notification Support
@@ -379,9 +389,9 @@ void activert_active_notify(activert_active_t* me, uint32_t notify_bits);
  *       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
  *   }
  */
-void activert_active_notify_from_isr(activert_active_t* me,
-                                     uint32_t notify_bits,
-                                     BaseType_t* pxHigherPriorityTaskWoken);
+void activert_active_notify_from_isr(
+    activert_active_t* me, uint32_t notify_bits, BaseType_t* pxHigherPriorityTaskWoken
+);
 
 /**
  * Set the valid notification bits mask for an Active Object.
@@ -507,7 +517,7 @@ void activert_active_print_stats(activert_active_t* me);
 #define ACTIVERT_ACTIVE_DEFINE_SIMPLE(task_name, dispatch_fn, prio, stack_sz, queue_len) \
     static StackType_t task_name##_stack[(stack_sz) / sizeof(StackType_t)];              \
     static StaticTask_t task_name##_task_cb;                                             \
-    static activert_event_t* task_name##_queue_storage[(queue_len)];                    \
+    static activert_event_t* task_name##_queue_storage[(queue_len)];                     \
     static StaticQueue_t task_name##_queue_cb;                                           \
     static activert_active_t task_name##_ao_storage;                                     \
     static activert_queue_t task_name##_queue_struct;                                    \
@@ -533,30 +543,33 @@ void activert_active_print_stats(activert_active_t* me);
  * function-call arguments where precedence is unambiguous. Parenthesising
  * a declaration name or a lone identifier passed as a function argument
  * provides no safety benefit and is not required by Rule 20.7. */
-#define ACTIVERT_ACTIVE_INIT_SIMPLE(task_name, dispatch_fn, prio)                            \
-    do                                                                                       \
-    {                                                                                        \
-        activert_queue_config_t task_name##_queue_config = {                                 \
-            .signal_base  = 0,                                                               \
-            .signal_count = 0,                                                               \
-            .queue_length = sizeof(task_name##_queue_storage) / sizeof(activert_event_t*),   \
-            .event_pool   = NULL};                                                             \
-        activert_event_t** task_name##_queue_storage_array[1] = {task_name##_queue_storage}; \
-        task_name = activert_active_create_static(#task_name,                                \
-                                                  (dispatch_fn),                             \
-                                                  (prio),                                    \
-                                                  task_name##_stack,                         \
-                                                  sizeof(task_name##_stack),                 \
-                                                  &task_name##_task_cb,                      \
-                                                  &task_name##_queue_config,                 \
-                                                  1,                                         \
-                                                  &task_name##_queue_cb,                     \
-                                                  task_name##_queue_storage_array,           \
-                                                  NULL,                                      \
-                                                  NULL,                                      \
-                                                  &task_name##_ao_storage,                   \
-                                                  &task_name##_queue_struct);                \
-        ACTIVERT_ASSERT(task_name != NULL);                                                  \
+#define ACTIVERT_ACTIVE_INIT_SIMPLE(task_name, dispatch_fn, prio)                              \
+    do                                                                                         \
+    {                                                                                          \
+        activert_queue_config_t task_name##_queue_config = {                                   \
+            .signal_base  = 0,                                                                 \
+            .signal_count = 0,                                                                 \
+            .queue_length = sizeof(task_name##_queue_storage) / sizeof(activert_event_t*),     \
+            .event_pool   = NULL                                                               \
+        };                                                                                     \
+        activert_event_t** task_name##_queue_storage_array[1] = {task_name##_queue_storage};   \
+        task_name                                             = activert_active_create_static( \
+            #task_name,                            \
+            (dispatch_fn),                         \
+            (prio),                                \
+            task_name##_stack,                     \
+            sizeof(task_name##_stack),             \
+            &task_name##_task_cb,                  \
+            &task_name##_queue_config,             \
+            1,                                     \
+            &task_name##_queue_cb,                 \
+            task_name##_queue_storage_array,       \
+            NULL,                                  \
+            NULL,                                  \
+            &task_name##_ao_storage,               \
+            &task_name##_queue_struct              \
+        );                                         \
+        ACTIVERT_ASSERT(task_name != NULL);                                                    \
     } while (0)
 
 /**
@@ -579,10 +592,10 @@ void activert_active_print_stats(activert_active_t* me);
  * Deviation: task_name is used only as a token-paste prefix (##) or
  * declaration identifier, not as a value expression. stack_sz is
  * parenthesised at its expression use site. */
-#define ACTIVERT_ACTIVE_DEFINE_LOOP(task_name, stack_sz)                      \
+#define ACTIVERT_ACTIVE_DEFINE_LOOP(task_name, stack_sz)                    \
     static StackType_t task_name##_stack[(stack_sz) / sizeof(StackType_t)]; \
-    static StaticTask_t task_name##_task_cb;                              \
-    static activert_active_t task_name##_ao_storage;                      \
+    static StaticTask_t task_name##_task_cb;                                \
+    static activert_active_t task_name##_ao_storage;                        \
     static activert_active_t* task_name = NULL;
 
 /**
@@ -603,18 +616,20 @@ void activert_active_print_stats(activert_active_t* me);
 /* cppcheck-suppress misra-c2012-20.7
  * Deviation: see ACTIVERT_ACTIVE_INIT_SIMPLE — same rationale applies to
  * task_name, dispatch_fn, loop_fn, and prio. */
-#define ACTIVERT_ACTIVE_INIT_LOOP(task_name, dispatch_fn, loop_fn, prio)          \
-    do                                                                            \
-    {                                                                             \
-        task_name = activert_active_create_loop_static(#task_name,                \
-                                                       (dispatch_fn),             \
-                                                       (loop_fn),                 \
-                                                       (prio),                    \
-                                                       task_name##_stack,         \
-                                                       sizeof(task_name##_stack), \
-                                                       &task_name##_task_cb,      \
-                                                       &task_name##_ao_storage);  \
-        ACTIVERT_ASSERT(task_name != NULL);                                       \
+#define ACTIVERT_ACTIVE_INIT_LOOP(task_name, dispatch_fn, loop_fn, prio) \
+    do                                                                   \
+    {                                                                    \
+        task_name = activert_active_create_loop_static(                  \
+            #task_name,                                                  \
+            (dispatch_fn),                                               \
+            (loop_fn),                                                   \
+            (prio),                                                      \
+            task_name##_stack,                                           \
+            sizeof(task_name##_stack),                                   \
+            &task_name##_task_cb,                                        \
+            &task_name##_ao_storage                                      \
+        );                                                               \
+        ACTIVERT_ASSERT(task_name != NULL);                              \
     } while (0)
 
 #endif /* ACTIVERT_ACTIVE_H */

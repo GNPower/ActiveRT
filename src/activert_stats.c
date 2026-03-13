@@ -284,9 +284,7 @@ int activert_stats_health_check(activert_health_check_t* result)
         if (active->stats.events_processed > 100U)
         {
             uint32_t total_events = active->stats.events_processed + active->stats.events_dropped;
-            float drop_rate =
-                (float)active->stats.events_dropped * 100.0f /
-                (float)total_events;
+            float drop_rate = (float)active->stats.events_dropped * 100.0f / (float)total_events;
 
             if (drop_rate > 5.0f)
             {
@@ -315,7 +313,9 @@ int activert_stats_health_check(activert_health_check_t* result)
             {
                 result->status = ACTIVERT_HEALTH_WARNING;
             }
-        } else {
+        }
+        else
+        {
             // No stack issues
         }
     }
@@ -382,7 +382,7 @@ int activert_stats_get_perf_summary(activert_perf_summary_t* summary)
             summary->slowest_signal      = active->stats.slowest_signal;
         #if ACTIVERT_ENABLE_NAMES
             summary->slowest_task_name = active->name;
-        #endif
+        #endif /* ACTIVERT_ENABLE_NAMES */
         }
     }
 
@@ -473,25 +473,32 @@ void activert_stats_print_summary(void)
     if ((health.warnings > 0U) || (health.criticals > 0U))
     {
         printf("\nIssues Detected:\n");
-        if (health.high_queue_utilization) {
+        if (health.high_queue_utilization)
+        {
             printf("  - High queue utilization (>80%%)\n");
         }
-        if (health.pool_exhaustion) {
+        if (health.pool_exhaustion)
+        {
             printf("  - Pool exhaustion detected\n");
         }
-        if (health.high_drop_rate) {
+        if (health.high_drop_rate)
+        {
             printf("  - High event drop rate (>5%%)\n");
         }
-        if (health.low_stack) {
+        if (health.low_stack)
+        {
             printf("  - Low stack space (<256 bytes)\n");
         }
-        if (health.queue_overflow) {
+        if (health.queue_overflow)
+        {
             printf("  - CRITICAL: Queue overflow\n");
         }
-        if (health.pool_critical) {
+        if (health.pool_critical)
+        {
             printf("  - CRITICAL: Pool failure rate >50%%\n");
         }
-        if (health.stack_overflow_risk) {
+        if (health.stack_overflow_risk)
+        {
             printf("  - CRITICAL: Stack overflow risk (<128 bytes)\n");
         }
     }
@@ -548,7 +555,7 @@ void activert_stats_print_full_report(void)
     printf("Slowest Signal:     %u\n", perf.slowest_signal);
         #if ACTIVERT_ENABLE_NAMES
     printf("Slowest Task:       %s\n", perf.slowest_task_name ? perf.slowest_task_name : "unknown");
-        #endif
+        #endif /* ACTIVERT_ENABLE_NAMES */
 
     activert_active_t* slowest = activert_stats_find_slowest_active();
     activert_active_t* busiest = activert_stats_find_busiest_active();
@@ -556,21 +563,25 @@ void activert_stats_print_full_report(void)
         #if ACTIVERT_ENABLE_NAMES
     if (slowest != NULL)
     {
-        printf("\nSlowest Task:       %s (%u ticks max)\n",
-               slowest->name ? slowest->name : "unnamed",
-               (unsigned int)slowest->stats.max_processing_time);
+        printf(
+            "\nSlowest Task:       %s (%u ticks max)\n",
+            slowest->name ? slowest->name : "unnamed",
+            (unsigned int)slowest->stats.max_processing_time
+        );
     }
 
     if (busiest != NULL)
     {
-        printf("Busiest Task:       %s (%u events)\n",
-               busiest->name ? busiest->name : "unnamed",
-               busiest->stats.events_processed);
+        printf(
+            "Busiest Task:       %s (%u events)\n",
+            busiest->name ? busiest->name : "unnamed",
+            busiest->stats.events_processed
+        );
     }
-        #endif
+        #endif /* ACTIVERT_ENABLE_NAMES */
 
     printf("================================================================================\n");
-    #endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 }
 
 /*******************************************************************************
@@ -593,7 +604,7 @@ void activert_stats_reset_active(activert_active_t* active)
     active->stats.total_processing_time = 0;
     active->stats.avg_processing_time   = 0;
     // Keep max_processing_time as high water mark
-    #endif
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
     // Reset queue stats
     for (uint8_t i = 0; i < active->queue_count; i++)
@@ -635,8 +646,9 @@ void activert_stats_reset_all(void)
 * Real-Time Monitoring
 *******************************************************************************/
 
-void activert_stats_monitor_queue_depth(uint8_t threshold_percent,
-                                        activert_monitor_callback_t callback)
+void activert_stats_monitor_queue_depth(
+    uint8_t threshold_percent, activert_monitor_callback_t callback
+)
 {
     g_stats_registry.queue_monitor   = callback;
     g_stats_registry.queue_threshold = threshold_percent;
@@ -647,8 +659,9 @@ void activert_stats_monitor_pool_exhaustion(activert_monitor_callback_t callback
     g_stats_registry.pool_monitor = callback;
 }
 
-void activert_stats_monitor_stack_usage(uint32_t threshold_bytes,
-                                        activert_monitor_callback_t callback)
+void activert_stats_monitor_stack_usage(
+    uint32_t threshold_bytes, activert_monitor_callback_t callback
+)
 {
     g_stats_registry.stack_monitor   = callback;
     g_stats_registry.stack_threshold = threshold_bytes;
@@ -704,14 +717,18 @@ int activert_stats_export(uint8_t* buffer, size_t buffer_size)
     // Write Active Object stats
     for (size_t i = 0U; i < g_stats_registry.active_count; i++)
     {
-        memcpy(&buffer[offset], &g_stats_registry.actives[i]->stats, sizeof(activert_active_stats_t));
+        memcpy(
+            &buffer[offset], &g_stats_registry.actives[i]->stats, sizeof(activert_active_stats_t)
+        );
         offset += sizeof(activert_active_stats_t);
     }
 
     // Write Event Pool stats
     for (size_t i = 0U; i < g_stats_registry.pool_count; i++)
     {
-        memcpy(&buffer[offset], &g_stats_registry.pools[i]->stats, sizeof(activert_event_pool_stats_t));
+        memcpy(
+            &buffer[offset], &g_stats_registry.pools[i]->stats, sizeof(activert_event_pool_stats_t)
+        );
         offset += sizeof(activert_event_pool_stats_t);
     }
 

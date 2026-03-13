@@ -277,9 +277,9 @@ void activert_stats_print_full_report(void);
  * @param pool          Event Pool (or NULL if Active Object-related)
  * @param message       Description of condition
  */
-typedef void (*activert_monitor_callback_t)(activert_active_t* active,
-                                            activert_event_pool_t* pool,
-                                            const char* message);
+typedef void (*activert_monitor_callback_t)(
+    activert_active_t* active, activert_event_pool_t* pool, const char* message
+);
 
 /**
  * Enable queue depth monitoring
@@ -289,8 +289,9 @@ typedef void (*activert_monitor_callback_t)(activert_active_t* active,
  * @param threshold_percent    Queue depth threshold (0-100%)
  * @param callback             Callback function
  */
-void activert_stats_monitor_queue_depth(uint8_t threshold_percent,
-                                        activert_monitor_callback_t callback);
+void activert_stats_monitor_queue_depth(
+    uint8_t threshold_percent, activert_monitor_callback_t callback
+);
 
 /**
  * Enable pool exhaustion monitoring
@@ -309,8 +310,9 @@ void activert_stats_monitor_pool_exhaustion(activert_monitor_callback_t callback
  * @param threshold_bytes      Free stack threshold (bytes)
  * @param callback             Callback function
  */
-void activert_stats_monitor_stack_usage(uint32_t threshold_bytes,
-                                        activert_monitor_callback_t callback);
+void activert_stats_monitor_stack_usage(
+    uint32_t threshold_bytes, activert_monitor_callback_t callback
+);
 
 /**
  * Disable all monitoring
