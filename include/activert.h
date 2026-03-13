@@ -27,16 +27,17 @@
 #define ACTIVERT_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/*******************************************************************************
+    /*******************************************************************************
 * Version Information
 *******************************************************************************/
 
-#define ACTIVERT_VERSION_MAJOR  1
-#define ACTIVERT_VERSION_MINOR  0
-#define ACTIVERT_VERSION_PATCH  0
+#define ACTIVERT_VERSION_MAJOR 1
+#define ACTIVERT_VERSION_MINOR 0
+#define ACTIVERT_VERSION_PATCH 0
 
 #define ACTIVERT_VERSION_STRING "1.0.0"
 
@@ -58,12 +59,12 @@ extern "C" {
 
 /* Optional: CLI Commands */
 #if ACTIVERT_ENABLE_CLI
-#include "activert_cli.h"
+    #include "activert_cli.h"
 #endif
 
 /* Optional: Statistics API */
 #if ACTIVERT_ENABLE_STATS
-#include "activert_stats.h"
+    #include "activert_stats.h"
 #endif
 
 /*******************************************************************************
@@ -75,9 +76,7 @@ extern "C" {
  * Format: 0xMMmmpppp (Major, minor, patch)
  */
 #define ACTIVERT_VERSION \
-    ((ACTIVERT_VERSION_MAJOR << 24) | \
-     (ACTIVERT_VERSION_MINOR << 16) | \
-     (ACTIVERT_VERSION_PATCH))
+    ((ACTIVERT_VERSION_MAJOR << 24) | (ACTIVERT_VERSION_MINOR << 16) | (ACTIVERT_VERSION_PATCH))
 
 /**
  * Check if ActiveRT version is at least X.Y.Z
@@ -94,11 +93,11 @@ extern "C" {
 #define activert_notify(ao, bits)           activert_active_notify((ao), (bits))
 #define activert_notify_isr(ao, bits, wake) activert_active_notify_from_isr((ao), (bits), (wake))
 
-/*******************************************************************************
+    /*******************************************************************************
 * Quick Reference - Common Patterns
 *******************************************************************************/
 
-/*
+    /*
  * PATTERN 1: Create Event Pool
  * 
  *   #define POOL_SIZE 10
@@ -113,7 +112,7 @@ extern "C" {
  *   );
  */
 
-/*
+    /*
  * PATTERN 2: Create Active Object (Single Queue)
  *
  *   static StackType_t stack[512];
@@ -141,7 +140,7 @@ extern "C" {
  *   );
  */
 
-/*
+    /*
  * PATTERN 3: Post Event to Active Object
  * 
  *   my_event_t* evt = (my_event_t*)activert_event_alloc(pool);
@@ -152,7 +151,7 @@ extern "C" {
  *   }
  */
 
-/*
+    /*
  * PATTERN 4: Dispatch Handler
  * 
  *   void my_dispatch_handler(activert_active_t* me, activert_event_t* evt) {
@@ -169,7 +168,7 @@ extern "C" {
  *   }
  */
 
-/*
+    /*
  * PATTERN 5: Multi-Queue Active Object
  *
  *   static StaticQueue_t queue_cbs[2];
@@ -198,7 +197,7 @@ extern "C" {
  *   );
  */
 
-/*
+    /*
  * PATTERN 6: Notification Handler (ISR → Task)
  *
  *   void my_notify_handler(activert_active_t* me, uint32_t value) {
@@ -223,7 +222,7 @@ extern "C" {
  *   activert_notify_from_isr(ao, 0x1234, NULL);
  */
 
-/*
+    /*
  * PATTERN 7: Loop Task (No Queue, No Notifications)
  *
  *   void my_loop_fn(activert_active_t* me) {

@@ -143,30 +143,32 @@ uint32_t activert_stats_get_total_pool_failures(void);
 /**
  * System health status
  */
-typedef enum {
-    ACTIVERT_HEALTH_OK,             /**< System healthy */
-    ACTIVERT_HEALTH_WARNING,        /**< Some warnings detected */
-    ACTIVERT_HEALTH_CRITICAL        /**< Critical issues detected */
+typedef enum
+{
+    ACTIVERT_HEALTH_OK,      /**< System healthy */
+    ACTIVERT_HEALTH_WARNING, /**< Some warnings detected */
+    ACTIVERT_HEALTH_CRITICAL /**< Critical issues detected */
 } activert_health_status_t;
 
 /**
  * Health check result
  */
-typedef struct {
+typedef struct
+{
     activert_health_status_t status;
     uint32_t warnings;
     uint32_t criticals;
-    
+
     // Warning flags
-    bool high_queue_utilization;    /**< Any queue >80% full */
-    bool pool_exhaustion;           /**< Any pool exhausted */
-    bool high_drop_rate;            /**< Event drop rate >5% */
-    bool low_stack;                 /**< Any task stack <512 bytes free */
-    
+    bool high_queue_utilization; /**< Any queue >80% full */
+    bool pool_exhaustion;        /**< Any pool exhausted */
+    bool high_drop_rate;         /**< Event drop rate >5% */
+    bool low_stack;              /**< Any task stack <512 bytes free */
+
     // Critical flags
-    bool queue_overflow;            /**< Any queue overflowed */
-    bool pool_critical;             /**< Pool allocation failure rate >50% */
-    bool stack_overflow_risk;       /**< Task stack <256 bytes free */
+    bool queue_overflow;      /**< Any queue overflowed */
+    bool pool_critical;       /**< Pool allocation failure rate >50% */
+    bool stack_overflow_risk; /**< Task stack <256 bytes free */
 } activert_health_check_t;
 
 /**
@@ -179,24 +181,25 @@ typedef struct {
  */
 int activert_stats_health_check(activert_health_check_t* result);
 
-/*******************************************************************************
+    /*******************************************************************************
 * Performance Profiling
 *******************************************************************************/
 
-#if ACTIVERT_ENABLE_TIMING_STATS
+    #if ACTIVERT_ENABLE_TIMING_STATS
 
 /**
  * Performance summary
  */
-typedef struct {
+typedef struct
+{
     uint32_t total_events;
     TickType_t total_processing_time;
     TickType_t avg_processing_time;
     TickType_t max_processing_time;
     activert_signal_t slowest_signal;
-    #if ACTIVERT_ENABLE_NAMES
+        #if ACTIVERT_ENABLE_NAMES
     const char* slowest_task_name;
-    #endif
+        #endif
 } activert_perf_summary_t;
 
 /**
@@ -221,7 +224,7 @@ activert_active_t* activert_stats_find_slowest_active(void);
  */
 activert_active_t* activert_stats_find_busiest_active(void);
 
-#endif /* ACTIVERT_ENABLE_TIMING_STATS */
+    #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 
 /*******************************************************************************
 * Report Generation
@@ -274,11 +277,9 @@ void activert_stats_print_full_report(void);
  * @param pool          Event Pool (or NULL if Active Object-related)
  * @param message       Description of condition
  */
-typedef void (*activert_monitor_callback_t)(
-    activert_active_t* active,
-    activert_event_pool_t* pool,
-    const char* message
-);
+typedef void (*activert_monitor_callback_t)(activert_active_t* active,
+                                            activert_event_pool_t* pool,
+                                            const char* message);
 
 /**
  * Enable queue depth monitoring
@@ -288,10 +289,8 @@ typedef void (*activert_monitor_callback_t)(
  * @param threshold_percent    Queue depth threshold (0-100%)
  * @param callback             Callback function
  */
-void activert_stats_monitor_queue_depth(
-    uint8_t threshold_percent,
-    activert_monitor_callback_t callback
-);
+void activert_stats_monitor_queue_depth(uint8_t threshold_percent,
+                                        activert_monitor_callback_t callback);
 
 /**
  * Enable pool exhaustion monitoring
@@ -310,10 +309,8 @@ void activert_stats_monitor_pool_exhaustion(activert_monitor_callback_t callback
  * @param threshold_bytes      Free stack threshold (bytes)
  * @param callback             Callback function
  */
-void activert_stats_monitor_stack_usage(
-    uint32_t threshold_bytes,
-    activert_monitor_callback_t callback
-);
+void activert_stats_monitor_stack_usage(uint32_t threshold_bytes,
+                                        activert_monitor_callback_t callback);
 
 /**
  * Disable all monitoring
@@ -359,10 +356,7 @@ void activert_stats_reset_all(void);
  * @param buffer_size   Buffer size
  * @return              Bytes written, or -1 on error
  */
-int activert_stats_export(
-    uint8_t* buffer, 
-    size_t buffer_size
-);
+int activert_stats_export(uint8_t* buffer, size_t buffer_size);
 
 /**
  * Get export buffer size required

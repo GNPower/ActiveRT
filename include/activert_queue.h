@@ -32,10 +32,7 @@
  * @param queue_index   Queue index
  * @return              Number of events in queue
  */
-UBaseType_t activert_queue_get_depth(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+UBaseType_t activert_queue_get_depth(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Get queue free space
@@ -44,10 +41,7 @@ UBaseType_t activert_queue_get_depth(
  * @param queue_index   Queue index
  * @return              Number of free slots in queue
  */
-UBaseType_t activert_queue_get_free_space(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+UBaseType_t activert_queue_get_free_space(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Check if queue is full
@@ -56,10 +50,7 @@ UBaseType_t activert_queue_get_free_space(
  * @param queue_index   Queue index
  * @return              true if queue is full
  */
-bool activert_queue_is_full(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+bool activert_queue_is_full(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Check if queue is empty
@@ -68,10 +59,7 @@ bool activert_queue_is_full(
  * @param queue_index   Queue index
  * @return              true if queue is empty
  */
-bool activert_queue_is_empty(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+bool activert_queue_is_empty(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Flush all events from a queue
@@ -83,10 +71,7 @@ bool activert_queue_is_empty(
  * @param queue_index   Queue index
  * @return              Number of events flushed
  */
-uint32_t activert_queue_flush(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+uint32_t activert_queue_flush(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Get queue configuration
@@ -96,11 +81,9 @@ uint32_t activert_queue_flush(
  * @param config        Output: queue configuration
  * @return              0 on success, -1 on error
  */
-int activert_queue_get_config(
-    activert_active_t* me, 
-    uint8_t queue_index,
-    activert_queue_config_t* config
-);
+int activert_queue_get_config(activert_active_t* me,
+                              uint8_t queue_index,
+                              activert_queue_config_t* config);
 
 /*******************************************************************************
 * Queue Statistics Helpers
@@ -121,10 +104,7 @@ void activert_queue_print_all_stats(activert_active_t* me);
  * @param me            Active Object
  * @param queue_index   Queue index
  */
-void activert_queue_print_stats(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Get queue utilization percentage
@@ -133,10 +113,7 @@ void activert_queue_print_stats(
  * @param queue_index   Queue index
  * @return              Utilization percentage (0-100)
  */
-uint8_t activert_queue_get_utilization(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+uint8_t activert_queue_get_utilization(activert_active_t* me, uint8_t queue_index);
 
 /**
  * Get queue peak utilization percentage
@@ -145,10 +122,7 @@ uint8_t activert_queue_get_utilization(
  * @param queue_index   Queue index
  * @return              Peak utilization percentage (0-100)
  */
-uint8_t activert_queue_get_peak_utilization(
-    activert_active_t* me, 
-    uint8_t queue_index
-);
+uint8_t activert_queue_get_peak_utilization(activert_active_t* me, uint8_t queue_index);
 
 #endif /* ACTIVERT_ENABLE_STATS */
 

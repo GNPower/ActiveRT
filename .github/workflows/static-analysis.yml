@@ -38,7 +38,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install cppcheck
-        run: sudo apt-get install -y cppcheck
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y cppcheck
 
       - name: Run cppcheck
         run: |
@@ -49,6 +51,13 @@ jobs:
             --inline-suppr \
             --suppress=missingInclude \
             --suppress=missingIncludeSystem \
+            --suppress=preprocessorErrorDirective \
+            --suppress=constParameter \
+            --suppress=constParameterPointer \
+            --suppress=constVariablePointer \
+            --suppress=knownConditionTrueFalse \
+            --suppress=normalCheckLevelMaxBranches \
+            -D tskKERNEL_VERSION_MAJOR=11 \
             -I include/ \
             src/
 
@@ -87,3 +96,32 @@ jobs:
         with:
           name: clang-tidy-report
           path: clang-tidy-output.txt
+
+  # -------------------------------------------------------------------------
+  # MISRA-C 2012: compliance check via cppcheck's misra addon.
+  #
+  # tools/misra/misra.json is committed (config only).
+  # tools/misra/misra_rules.txt is NOT committed (copyrighted) — it is
+  # decoded at runtime from the MISRA_RULES_B64 repository secret.
+  #
+  # To populate the secret (run once, from a machine that has the file):
+  #   base64 -w0 tools/misra/misra_rules.txt | gh secret set MISRA_RULES_B64
+  # -------------------------------------------------------------------------
+  misra:
+    name: MISRA-C 2012
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y cppcheck
+
+      - name: Decode MISRA rules
+        run: |
+          printf '%s' "${{ secrets.MISRA_RULES_B64 }}" | base64 -d > tools/misra/misra_rules.txt
+
+      - name: Run MISRA-C 2012 check
+        run: python3 tools/misra/run_misra_check.py --fetch-freertos

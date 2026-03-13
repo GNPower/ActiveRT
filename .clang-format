@@ -2,7 +2,7 @@
 # ActiveRT clang-format configuration
 # Style: Allman braces, 4-space indent, 100-column limit
 # Suitable for embedded C following the project's existing conventions.
-Language:        C
+Language:        Cpp
 BasedOnStyle:    LLVM
 
 # Indentation
@@ -12,6 +12,7 @@ UseTab:                   Never
 ContinuationIndentWidth:  4
 IndentCaseLabels:         true
 IndentGotoLabels:         true
+IndentPPDirectives:       BeforeHash
 
 # Column limit
 ColumnLimit:              100
@@ -23,12 +24,12 @@ AllowShortFunctionsOnASingleLine:   None
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine:        false
 
-# Pointers — align to the right (int *ptr)
+# Pointers — align to the left (int* ptr), matching existing code convention
 DerivePointerAlignment:   false
-PointerAlignment:         Right
+PointerAlignment:         Left
 
 # Spacing
-SpaceAfterCStyleCast:         true
+SpaceAfterCStyleCast:         false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens:            ControlStatements
 SpaceInEmptyParentheses:      false
@@ -45,11 +46,11 @@ AlignAfterOpenBracket:        Align
 InsertTrailingCommas:         None
 
 # Comments
-ReflowComments:               true
+ReflowComments:               false
 SpacesBeforeTrailingComments: 2
 
-# Includes — preserve grouping but sort within groups
-SortIncludes:                 CaseSensitive
+# Includes — preserve order (include order can affect FreeRTOS builds)
+SortIncludes:                 Never
 IncludeBlocks:                Preserve
 
 # Alignment

@@ -27,10 +27,7 @@
 * Notification API
 *******************************************************************************/
 
-void activert_active_notify(
-    activert_active_t* me, 
-    uint32_t notify_bits
-) 
+void activert_active_notify(activert_active_t* me, uint32_t notify_bits)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(me->notification.handler != NULL);
@@ -38,7 +35,8 @@ void activert_active_notify(
     // Hybrid notification strategy:
     // - If semaphore exists (queue+notification task): use semaphore in queue set
     // - Else (notification-only task): use xTaskNotify directly
-    if (me->notification.semaphore) {
+    if (me->notification.semaphore != NULL)
+    {
         // Accumulate notification bits (OR them together) - use critical section for thread safety
         ACTIVERT_ENTER_CRITICAL();
         me->notification.pending_value |= notify_bits;
@@ -46,24 +44,25 @@ void activert_active_notify(
 
         // Give semaphore to wake up task
         xSemaphoreGive(me->notification.semaphore);
-    } else {
+    }
+    else
+    {
         // Use xTaskNotify for notification-only tasks (ultra-lightweight)
         xTaskNotify(me->thread, notify_bits, eSetBits);
     }
 
-    #if ACTIVERT_ENABLE_DEBUG
+#if ACTIVERT_ENABLE_DEBUG
     #if ACTIVERT_ENABLE_NAMES
     printf("activert_active_notify: Notified task '%s' with bits 0x%08X\n",
-           me->name ? me->name : "unnamed", (unsigned int)notify_bits);
+           me->name ? me->name : "unnamed",
+           (unsigned int)notify_bits);
     #endif
-    #endif
+#endif
 }
 
-void activert_active_notify_from_isr(
-    activert_active_t* me, 
-    uint32_t notify_bits,
-    BaseType_t* pxHigherPriorityTaskWoken
-) 
+void activert_active_notify_from_isr(activert_active_t* me,
+                                     uint32_t notify_bits,
+                                     BaseType_t* pxHigherPriorityTaskWoken)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(me->notification.handler != NULL);
@@ -71,7 +70,8 @@ void activert_active_notify_from_isr(
     // Hybrid notification strategy (ISR version):
     // - If semaphore exists (queue+notification task): use semaphore in queue set
     // - Else (notification-only task): use xTaskNotifyFromISR directly
-    if (me->notification.semaphore) {
+    if (me->notification.semaphore != NULL)
+    {
         // Accumulate notification bits (OR them together) - use ISR-safe critical section
         UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
         me->notification.pending_value |= notify_bits;
@@ -79,7 +79,9 @@ void activert_active_notify_from_isr(
 
         // Give semaphore to wake up task
         xSemaphoreGiveFromISR(me->notification.semaphore, pxHigherPriorityTaskWoken);
-    } else {
+    }
+    else
+    {
         // Use xTaskNotifyFromISR for notification-only tasks (ultra-lightweight)
         xTaskNotifyFromISR(me->thread, notify_bits, eSetBits, pxHigherPriorityTaskWoken);
     }
@@ -98,14 +100,11 @@ void activert_active_notify_from_isr(
  * @param me            Active Object
  * @param mask          Valid notification bits mask
  */
-void activert_active_set_notify_mask(
-    activert_active_t* me, 
-    uint32_t mask
-) 
+void activert_active_set_notify_mask(activert_active_t* me, uint32_t mask)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(me->notification.handler != NULL);
-    
+
     me->notification.notify_mask = mask;
 }
 
@@ -115,9 +114,10 @@ void activert_active_set_notify_mask(
  * @param me            Active Object
  * @return              Current notification mask
  */
-uint32_t activert_active_get_notify_mask(activert_active_t* me) {
+uint32_t activert_active_get_notify_mask(activert_active_t* me)
+{
     ACTIVERT_ASSERT(me != NULL);
-    
+
     return me->notification.notify_mask;
 }
 
@@ -127,9 +127,10 @@ uint32_t activert_active_get_notify_mask(activert_active_t* me) {
  * @param me            Active Object
  * @return              true if notification handler is configured
  */
-bool activert_active_has_notification(activert_active_t* me) {
+bool activert_active_has_notification(activert_active_t* me)
+{
     ACTIVERT_ASSERT(me != NULL);
-    
+
     return (me->notification.handler != NULL);
 }
 
@@ -145,9 +146,10 @@ bool activert_active_has_notification(activert_active_t* me) {
  * @param me            Active Object
  * @return              Total notifications received
  */
-uint32_t activert_active_get_notification_count(activert_active_t* me) {
+uint32_t activert_active_get_notification_count(activert_active_t* me)
+{
     ACTIVERT_ASSERT(me != NULL);
-    
+
     return me->stats.notifications_received;
 }
 
@@ -156,14 +158,16 @@ uint32_t activert_active_get_notification_count(activert_active_t* me) {
  * 
  * @param me            Active Object
  */
-void activert_active_print_notification_stats(activert_active_t* me) {
+void activert_active_print_notification_stats(activert_active_t* me)
+{
     ACTIVERT_ASSERT(me != NULL);
-    
-    if (!me->notification.handler) {
+
+    if (!me->notification.handler)
+    {
         printf("Task has no notification handler\n");
         return;
     }
-    
+
     printf("================================================================\n");
     #if ACTIVERT_ENABLE_NAMES
     printf("Notification Statistics: %s\n", me->name ? me->name : "unnamed");
@@ -173,13 +177,14 @@ void activert_active_print_notification_stats(activert_active_t* me) {
     printf("================================================================\n");
     printf("Notifications received: %u\n", me->stats.notifications_received);
     printf("Notification mask:      0x%08X\n", (unsigned int)me->notification.notify_mask);
-    
-    if (me->stats.events_processed > 0) {
-        float notify_ratio = (float)me->stats.notifications_received * 100.0f /
-                            (float)(me->stats.notifications_received + me->stats.events_processed);
+
+    if (me->stats.events_processed > 0U)
+    {
+        uint32_t total_events = me->stats.events_processed + me->stats.notifications_received;
+        float notify_ratio = (float)me->stats.notifications_received * 100.0f / (float)total_events;
         printf("Notification ratio:     %.1f%% (vs queue events)\n", notify_ratio);
     }
-    
+
     printf("================================================================\n");
 }
 

@@ -138,21 +138,13 @@ const char* activert_cli_health_status_str(activert_health_status_t status);
 /**
  * Format byte count as human-readable string
  */
-const char* activert_cli_format_bytes(
-    size_t bytes, 
-    char* buffer, 
-    size_t buffer_len
-);
+const char* activert_cli_format_bytes(size_t bytes, char* buffer, size_t buffer_len);
 
 /**
  * Format percentage
  */
-const char* activert_cli_format_percent(
-    uint32_t value, 
-    uint32_t max,
-    char* buffer, 
-    size_t buffer_len
-);
+const char*
+activert_cli_format_percent(uint32_t value, uint32_t max, char* buffer, size_t buffer_len);
 
 #endif /* ACTIVERT_ENABLE_STATS */
 

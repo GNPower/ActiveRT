@@ -128,6 +128,12 @@ Icon
 *.plist
 compile_commands.json.bak
 
+# ---- MISRA-C rules (copyrighted — decoded from MISRA_RULES_B64 secret at runtime) ----
+tools/misra/misra_rules.txt
+
+# ---- act local secrets file ----
+.secrets
+
 # ---- Coverage reports ----
 *.gcno
 *.gcda

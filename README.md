@@ -10,7 +10,7 @@ for FreeRTOS-based embedded systems.
 
 Each Active Object is a self-contained FreeRTOS task that processes events
 from one or more queues. The pattern eliminates shared-state concurrency bugs
-by ensuring that all state belonging to an object is only accessed by its own
+by ensuring that all state data belonging to an object is only accessed by its own
 task — no mutexes, no race conditions.
 
 ---
@@ -26,7 +26,7 @@ task — no mutexes, no race conditions.
 | **Statistics** | Per-component counters, peak usage, processing time, health checks |
 | **CLI layer** | Runtime diagnostics via any embedded CLI system |
 | **ISR-safe APIs** | `_from_isr` variants for all post/free/notify operations |
-| **FreeRTOS 10/11** | Compatible with both FreeRTOS 10.x and 11.x |
+| **FreeRTOS 11** | Compatible with FreeRTOS 11.x |
 
 ---
 
@@ -120,7 +120,7 @@ target_link_libraries(my_firmware PRIVATE ActiveRT::activert)
 > **Note:** ActiveRT headers directly include FreeRTOS headers (`FreeRTOS.h`,
 > `task.h`, `queue.h`, `semphr.h`). Your embedded toolchain or BSP must supply
 > these — ActiveRT does not bundle FreeRTOS. The library target will not compile
-> standalone; it is always built as part of an embedding project that provides
+> standalone; it is always built as part of an embedded project that provides
 > FreeRTOS in its include path.
 
 ### Host unit tests (Linux / macOS)

@@ -43,6 +43,12 @@ set(FREERTOS_HEAP "4"         CACHE STRING "FreeRTOS heap impl" FORCE)
 
 FetchContent_MakeAvailable(freertos_kernel)
 
+# Give the root 'activert' library target access to FreeRTOS headers.
+# This ensures compile_commands.json entries for library sources include the
+# correct paths, which fixes both the CI build and clang-tidy analysis.
+# CMake targets are global, so this is valid from a subdirectory.
+target_link_libraries(activert PRIVATE freertos_kernel)
+
 ################################################################################
 # Unity test framework
 ################################################################################

@@ -25,7 +25,7 @@
 #include "activert_types.h"
 #include "activert_config.h"
 #if ACTIVERT_ENABLE_STATS == 1
-#include "activert_stats.h"
+    #include "activert_stats.h"
 #endif
 
 /*******************************************************************************
@@ -54,13 +54,11 @@
  *       ACTIVERT_POOL_OVERFLOW_DROP
  *   );
  */
-activert_event_pool_t* activert_event_pool_create(
-    const char* name,
-    void* pool_memory,
-    size_t event_size,
-    size_t pool_size,
-    activert_pool_overflow_policy_t policy
-);
+activert_event_pool_t* activert_event_pool_create(const char* name,
+                                                  void* pool_memory,
+                                                  size_t event_size,
+                                                  size_t pool_size,
+                                                  activert_pool_overflow_policy_t policy);
 
 /**
  * Initialize an event pool in-place using fully static storage
@@ -82,15 +80,13 @@ activert_event_pool_t* activert_event_pool_create(
  * @param pool_size     Number of events in pool
  * @param policy        Overflow policy
  */
-void activert_event_pool_init_static(
-    activert_event_pool_t* pool,
-    const char* name,
-    void* pool_memory,
-    uint8_t* bitmap,
-    size_t event_size,
-    size_t pool_size,
-    activert_pool_overflow_policy_t policy
-);
+void activert_event_pool_init_static(activert_event_pool_t* pool,
+                                     const char* name,
+                                     void* pool_memory,
+                                     uint8_t* bitmap,
+                                     size_t event_size,
+                                     size_t pool_size,
+                                     activert_pool_overflow_policy_t policy);
 
 /**
  * Create a dynamic event pool
@@ -113,12 +109,10 @@ void activert_event_pool_init_static(
  * Note: Requires ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1
  */
 #if ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
-activert_event_pool_t* activert_event_pool_create_dynamic(
-    const char* name,
-    size_t event_size,
-    size_t pool_size,
-    activert_pool_overflow_policy_t policy
-);
+activert_event_pool_t* activert_event_pool_create_dynamic(const char* name,
+                                                          size_t event_size,
+                                                          size_t pool_size,
+                                                          activert_pool_overflow_policy_t policy);
 
 /**
  * Destroy a dynamic event pool
@@ -308,10 +302,18 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool);
  *   // In initialization function:
  *   ACTIVERT_EVENT_POOL_INIT(my_event_pool, my_event_t, 16, ACTIVERT_POOL_OVERFLOW_DROP);
  */
+/* cppcheck-suppress misra-c2012-20.7
+ * Deviation: pool_name is used only as a token-paste prefix or declaration
+ * identifier. event_type is a type name inside sizeof() — C syntax does not
+ * permit an additional layer of parentheses around a type name in that
+ * position. count is parenthesised at every arithmetic use site; the bare
+ * use in the first array dimension cannot be further parenthesised in an
+ * array declarator without introducing a VLA interpretation on some
+ * compilers, so a suppression is used instead. */
 #define ACTIVERT_EVENT_POOL_DEFINE(pool_name, event_type, count, policy) \
-    static uint8_t pool_name##_memory[count][sizeof(event_type)]; \
-    static uint8_t pool_name##_bitmap[((count) + 7) / 8]; \
-    static activert_event_pool_t pool_name##_struct; \
+    static uint8_t pool_name##_memory[(count)][sizeof(event_type)];      \
+    static uint8_t pool_name##_bitmap[((count) + 7U) / 8U];              \
+    static activert_event_pool_t pool_name##_struct;                     \
     static activert_event_pool_t* pool_name = NULL;
 
 /**
@@ -330,18 +332,22 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool);
  *       my_event_t* evt = (my_event_t*)activert_event_pool_alloc(my_event_pool);
  *   }
  */
+/* cppcheck-suppress misra-c2012-20.7
+ * Deviation: pool_name is used as a declaration identifier and assignment
+ * target. event_type is a type name inside sizeof() — Rule 20.7
+ * parenthesisation is inapplicable to type names. count and policy are
+ * parenthesised at their function-argument use sites. */
 #define ACTIVERT_EVENT_POOL_INIT(pool_name, event_type, count, policy) \
-    do { \
-        activert_event_pool_init_static( \
-            &pool_name##_struct, \
-            #pool_name, \
-            pool_name##_memory, \
-            pool_name##_bitmap, \
-            sizeof(event_type), \
-            count, \
-            policy \
-        ); \
-        pool_name = &pool_name##_struct; \
-    } while(0)
+    do                                                                 \
+    {                                                                  \
+        activert_event_pool_init_static(&pool_name##_struct,           \
+                                        #pool_name,                    \
+                                        pool_name##_memory,            \
+                                        pool_name##_bitmap,            \
+                                        sizeof(event_type),            \
+                                        (count),                       \
+                                        (policy));                     \
+        pool_name = &pool_name##_struct;                               \
+    } while (0)
 
 #endif /* ACTIVERT_EVENT_H */

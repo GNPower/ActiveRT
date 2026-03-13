@@ -32,28 +32,27 @@
  * @param signal        Event signal
  * @return              Queue index, or -1 if no matching queue
  */
-static int find_queue_for_signal(
-    activert_active_t* me, 
-    activert_signal_t signal
-) 
+static int find_queue_for_signal(activert_active_t* me, activert_signal_t signal)
 {
     int catch_all_queue = -1;
-    
-    for (uint8_t i = 0; i < me->queue_count; i++) {
+
+    for (uint8_t i = 0; i < me->queue_count; i++)
+    {
         // Check if this is a catch-all queue (signal_count == 0)
-        if (me->queues[i].signal_count == 0) {
+        if (me->queues[i].signal_count == 0U)
+        {
             catch_all_queue = i;
             continue;
         }
-        
+
         // Check if signal is in this queue's range
-        if (signal >= me->queues[i].signal_base &&
-            signal < (me->queues[i].signal_base + me->queues[i].signal_count))
+        if ((signal >= me->queues[i].signal_base) &&
+            (signal < (me->queues[i].signal_base + me->queues[i].signal_count)))
         {
             return i;
         }
     }
-    
+
     // No specific queue found, use catch-all if available
     return catch_all_queue;
 }
@@ -64,11 +63,13 @@ static int find_queue_for_signal(
  * @param queue         Queue to update
  */
 #if ACTIVERT_ENABLE_STATS
-static void update_queue_depth_stats(activert_queue_t* queue) {
-    UBaseType_t depth = uxQueueMessagesWaiting(queue->handle);
+static void update_queue_depth_stats(activert_queue_t* queue)
+{
+    UBaseType_t depth          = uxQueueMessagesWaiting(queue->handle);
     queue->stats.current_depth = depth;
 
-    if (depth > queue->stats.peak_depth) {
+    if (depth > queue->stats.peak_depth)
+    {
         queue->stats.peak_depth = depth;
     }
 }
@@ -78,67 +79,67 @@ static void update_queue_depth_stats(activert_queue_t* queue) {
 * Event Posting - Normal Context
 *******************************************************************************/
 
-int activert_active_post(
-    activert_active_t* me, 
-    activert_event_t* event
-) 
+int activert_active_post(activert_active_t* me, activert_event_t* event)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
 
     // Find queue based on signal
     int queue_idx = find_queue_for_signal(me, event->sig);
-    
-    if (queue_idx < 0) {
-        #if ACTIVERT_ENABLE_DEBUG
-        #if ACTIVERT_ENABLE_NAMES
+
+    if (queue_idx < 0)
+    {
+#if ACTIVERT_ENABLE_DEBUG
+    #if ACTIVERT_ENABLE_NAMES
         printf("activert_active_post: No queue for signal %u in task '%s'\n",
-               event->sig, me->name ? me->name : "unnamed");
-        #endif
-        #endif
-        
-        #if ACTIVERT_ENABLE_STATS
+               event->sig,
+               me->name ? me->name : "unnamed");
+    #endif
+#endif
+
+#if ACTIVERT_ENABLE_STATS
         me->stats.events_dropped++;
-        #endif
-        
+#endif
+
         return -1;  // No queue handles this signal
     }
-    
+
     return activert_active_post_to_queue(me, queue_idx, event);
 }
 
-int activert_active_post_to_queue(
-    activert_active_t* me, 
-    uint8_t queue_index,
-    activert_event_t* event
-) 
+int activert_active_post_to_queue(activert_active_t* me,
+                                  uint8_t queue_index,
+                                  activert_event_t* event)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
     ACTIVERT_ASSERT(queue_index < me->queue_count);
 
-    #if ACTIVERT_ENABLE_STATS
+#if ACTIVERT_ENABLE_STATS
     me->queues[queue_index].stats.posts_attempted++;
-    #endif
+#endif
 
     // Post event to queue (non-blocking)
     // Queue stores activert_event_t*, so send the pointer value, not its address
     BaseType_t status = xQueueSendToBack(me->queues[queue_index].handle, &event, 0);
     __asm__ volatile("" ::: "memory");  // Memory barrier - prevents optimization
 
-    if (status == pdPASS) {
-        #if ACTIVERT_ENABLE_STATS
+    if (status == pdPASS)
+    {
+#if ACTIVERT_ENABLE_STATS
         me->queues[queue_index].stats.posts_succeeded++;
         update_queue_depth_stats(&me->queues[queue_index]);
-        #endif
+#endif
 
         return 0;
-    } else {
-        // Queue full
-        #if ACTIVERT_ENABLE_STATS
+    }
+    else
+    {
+// Queue full
+#if ACTIVERT_ENABLE_STATS
         me->queues[queue_index].stats.posts_failed++;
         me->stats.events_dropped++;
-        #endif
+#endif
 
         return -1;
     }
@@ -148,69 +149,61 @@ int activert_active_post_to_queue(
 * Event Posting - ISR Context
 *******************************************************************************/
 
-int activert_active_post_from_isr(
-    activert_active_t* me, 
-    activert_event_t* event,
-    BaseType_t* pxHigherPriorityTaskWoken
-) 
+int activert_active_post_from_isr(activert_active_t* me,
+                                  activert_event_t* event,
+                                  BaseType_t* pxHigherPriorityTaskWoken)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
-    
+
     // Find queue based on signal
     int queue_idx = find_queue_for_signal(me, event->sig);
-    
-    if (queue_idx < 0) {
-        #if ACTIVERT_ENABLE_STATS
+
+    if (queue_idx < 0)
+    {
+#if ACTIVERT_ENABLE_STATS
         me->stats.events_dropped++;
-        #endif
+#endif
         return -1;
     }
-    
-    return activert_active_post_to_queue_from_isr(
-        me, 
-        queue_idx, 
-        event, 
-        pxHigherPriorityTaskWoken
-    );
+
+    return activert_active_post_to_queue_from_isr(me, queue_idx, event, pxHigherPriorityTaskWoken);
 }
 
-int activert_active_post_to_queue_from_isr(
-    activert_active_t* me, 
-    uint8_t queue_index,
-    activert_event_t* event,
-    BaseType_t* pxHigherPriorityTaskWoken
-) 
+int activert_active_post_to_queue_from_isr(activert_active_t* me,
+                                           uint8_t queue_index,
+                                           activert_event_t* event,
+                                           BaseType_t* pxHigherPriorityTaskWoken)
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
     ACTIVERT_ASSERT(queue_index < me->queue_count);
-    
-    #if ACTIVERT_ENABLE_STATS
+
+#if ACTIVERT_ENABLE_STATS
     me->queues[queue_index].stats.posts_attempted++;
-    #endif
-    
+#endif
+
     // Post event to queue from ISR
-    BaseType_t status = xQueueSendToBackFromISR(
-        me->queues[queue_index].handle,
-        &event,
-        pxHigherPriorityTaskWoken
-    );
-    
-    if (status == pdPASS) {
-        #if ACTIVERT_ENABLE_STATS
+    BaseType_t status =
+        xQueueSendToBackFromISR(me->queues[queue_index].handle, &event, pxHigherPriorityTaskWoken);
+
+    if (status == pdPASS)
+    {
+#if ACTIVERT_ENABLE_STATS
         me->queues[queue_index].stats.posts_succeeded++;
-        // Note: Can't safely call uxQueueMessagesWaiting from ISR
-        // Queue depth stats won't be updated from ISR posts
-        #endif
-        
+// Note: Can't safely call uxQueueMessagesWaiting from ISR
+// Queue depth stats won't be updated from ISR posts
+#endif
+
         return 0;
-    } else {
-        #if ACTIVERT_ENABLE_STATS
+    }
+    else
+    {
+#if ACTIVERT_ENABLE_STATS
         me->queues[queue_index].stats.posts_failed++;
         me->stats.events_dropped++;
-        #endif
-        
+#endif
+
         return -1;
     }
 }
