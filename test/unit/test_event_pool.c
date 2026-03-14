@@ -206,6 +206,18 @@ void test_reset_stats_clears_peak_and_failures(void)
         alloc_tracked();
     activert_event_pool_alloc(test_pool); /* failure */
 
+    /* Free all events before reset — peak cannot go below current_allocated,
+     * so stats can only fully clear once there are no outstanding events. */
+    for (int i = 0; i < s_held_count; i++)
+    {
+        if (s_held_events[i] != NULL)
+        {
+            activert_event_pool_free(s_held_events[i]);
+            s_held_events[i] = NULL;
+        }
+    }
+    s_held_count = 0;
+
     activert_event_pool_reset_stats(test_pool);
 
     TEST_ASSERT_EQUAL_size_t(0, activert_event_pool_get_peak_usage(test_pool));
