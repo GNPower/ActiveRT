@@ -1,47 +1,16 @@
 API Reference
 =============
 
-The ActiveRT API is documented via Doxygen comment annotations in the
-public header files. The sections below are generated automatically.
+The ActiveRT API is documented via Doxygen annotations in the public
+header files. Each section below corresponds to one header.
 
-Event Pools
------------
+.. toctree::
+   :maxdepth: 1
 
-.. doxygenfile:: activert_event.h
-   :project: ActiveRT
-
-Active Objects
---------------
-
-.. doxygenfile:: activert_active.h
-   :project: ActiveRT
-
-Statistics & Health
--------------------
-
-.. doxygenfile:: activert_stats.h
-   :project: ActiveRT
-
-Multi-Queue Utilities
----------------------
-
-.. doxygenfile:: activert_queue.h
-   :project: ActiveRT
-
-CLI Commands
-------------
-
-.. doxygenfile:: activert_cli.h
-   :project: ActiveRT
-
-Type Definitions
-----------------
-
-.. doxygenfile:: activert_types.h
-   :project: ActiveRT
-
-Configuration
--------------
-
-.. doxygenfile:: activert_config.h
-   :project: ActiveRT
+   active_objects
+   event_pools
+   statistics
+   queue_utilities
+   types
+   configuration
+   cli

@@ -1,0 +1,4 @@
+/* Invert diagram images in dark mode so black-on-white becomes white-on-black */
+[data-theme="dark"] .diagram-invertible img {
+    filter: invert(1);
+}

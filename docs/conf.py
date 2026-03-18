@@ -56,7 +56,8 @@ source_suffix = {
 
 html_theme         = "furo"
 html_title         = f"ActiveRT {release}"
-html_static_path   = []
+html_static_path   = ["_static"]
+html_css_files     = ["custom.css"]
 
 html_theme_options = {
     "sidebar_hide_name": False,
