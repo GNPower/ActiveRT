@@ -22,6 +22,13 @@
 #ifndef ACTIVERT_CONFIG_H
 #define ACTIVERT_CONFIG_H
 
+/* Include project-level overrides before defaults are set.
+ * Create activert_user_config.h in your include path to override any macro.
+ * This mirrors the FreeRTOSConfig.h pattern. */
+#if __has_include("activert_user_config.h")
+    #include "activert_user_config.h"
+#endif
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -134,8 +141,10 @@
 
 /* Printf for debug output (stdout) */
 #if ACTIVERT_ENABLE_DEBUG || ACTIVERT_ENABLE_STATS
-    #include <stdio.h>
-    #define ACTIVERT_PRINTF printf
+    #ifndef ACTIVERT_PRINTF
+        #include <stdio.h>
+        #define ACTIVERT_PRINTF printf
+    #endif
 #else
     #define ACTIVERT_PRINTF(...) ((void)0)
 #endif
