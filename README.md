@@ -11,7 +11,9 @@ for FreeRTOS-based embedded systems.
 Each Active Object is a self-contained FreeRTOS task that processes events
 from one or more queues. The pattern eliminates shared-state concurrency bugs
 by ensuring that all state data belonging to an object is only accessed by its own
-task — no mutexes, no race conditions.
+task; no mutexes, no race conditions.
+
+Detailed documentation can be found at [ReadTheDocs](https://activert.readthedocs.io).
 
 ---
 
@@ -22,11 +24,11 @@ task — no mutexes, no race conditions.
 | **Static allocation** | Zero-heap operation — all buffers provided by the caller |
 | **Event pools** | Bitmap-based allocation with `DROP`, `ASSERT`, or `DYNAMIC` overflow policies |
 | **Multi-queue AOs** | Up to 8 queues per Active Object with signal-based routing |
-| **Task notifications** | Lightweight ISR → task signalling without event allocation |
+| **Task notifications** | Lightweight ISR -> task signalling without event allocation |
 | **Statistics** | Per-component counters, peak usage, processing time, health checks |
 | **CLI layer** | Runtime diagnostics via any embedded CLI system |
 | **ISR-safe APIs** | `_from_isr` variants for all post/free/notify operations |
-| **FreeRTOS 11** | Compatible with FreeRTOS 11.x |
+| **FreeRTOS 11** | Compatible with FreeRTOS 11.2+ |
 
 ---
 
@@ -125,7 +127,7 @@ target_link_libraries(my_firmware PRIVATE ActiveRT::activert)
 
 ### Host unit tests (Linux / macOS)
 
-Uses the FreeRTOS POSIX simulator — no hardware required.
+Uses the FreeRTOS POSIX simulator, no hardware required.
 
 ```bash
 cmake --preset host-test
@@ -180,7 +182,7 @@ Key options in `include/activert_config.h`:
 
 Full API reference is published at the project's GitHub Pages site.
 
-- [CHANGELOG.md](CHANGELOG.md) — version history
+- [CHANGELOG.md](CHANGELOG.md)
 
 ---
 

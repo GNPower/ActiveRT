@@ -6,5 +6,6 @@ Getting Started
 
    what_is_activert
    installation
+   configuration
    quickstart
    basics
