@@ -1,0 +1,87 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "host-test",
+            "displayName": "Host Build with Tests (Debug)",
+            "description": "Builds and runs the unit tests using the FreeRTOS POSIX simulator on the host machine.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/host-test",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":            "Debug",
+                "ACTIVERT_BUILD_TESTS":        "ON",
+                "ACTIVERT_BUILD_DOCS":         "OFF",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "host-release",
+            "displayName": "Host Release Build (library only)",
+            "description": "Builds the installable static library without tests or docs.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/host-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":     "Release",
+                "ACTIVERT_BUILD_TESTS": "OFF",
+                "ACTIVERT_BUILD_DOCS":  "OFF"
+            }
+        },
+        {
+            "name": "docs",
+            "displayName": "Documentation Build",
+            "description": "Builds Doxygen + Sphinx HTML documentation.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/docs",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":     "Release",
+                "ACTIVERT_BUILD_TESTS": "OFF",
+                "ACTIVERT_BUILD_DOCS":  "ON"
+            }
+        },
+        {
+            "name": "windows-lib",
+            "displayName": "Windows Library Build (no tests)",
+            "description": "Builds the static library on Windows using Visual Studio. Tests are Linux-only (run in CI).",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/windows-lib",
+            "cacheVariables": {
+                "ACTIVERT_BUILD_TESTS": "OFF",
+                "ACTIVERT_BUILD_DOCS":  "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "host-test",
+            "configurePreset": "host-test"
+        },
+        {
+            "name": "host-release",
+            "configurePreset": "host-release"
+        },
+        {
+            "name": "docs",
+            "configurePreset": "docs",
+            "targets": ["docs"]
+        },
+        {
+            "name": "windows-lib",
+            "configurePreset": "windows-lib",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "host-test",
+            "configurePreset": "host-test",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        }
+    ]
+}

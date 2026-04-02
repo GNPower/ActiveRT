@@ -1,0 +1,6 @@
+# Tell GitHub Linguist what counts as primary source code.
+# Files marked linguist-documentation are excluded from language stats.
+
+docs/**   linguist-documentation=true
+tools/**  linguist-documentation=true
+test/**   linguist-documentation=true

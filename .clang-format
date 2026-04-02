@@ -1,0 +1,67 @@
+---
+# ActiveRT clang-format configuration
+# Style: Allman braces, 4-space indent, 100-column limit
+# Suitable for embedded C following the project's existing conventions.
+Language:        Cpp
+BasedOnStyle:    LLVM
+
+# Indentation
+IndentWidth:              4
+TabWidth:                 4
+UseTab:                   Never
+ContinuationIndentWidth:  4
+IndentCaseLabels:         true
+IndentGotoLabels:         true
+IndentPPDirectives:       BeforeHash
+
+# Column limit
+ColumnLimit:              100
+
+# Braces — Allman style (opening brace on its own line)
+BreakBeforeBraces:        Allman
+AllowShortBlocksOnASingleLine:      Never
+AllowShortFunctionsOnASingleLine:   None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:        false
+
+# Pointers — align to the left (int* ptr), matching existing code convention
+DerivePointerAlignment:   false
+PointerAlignment:         Left
+
+# Spacing
+SpaceAfterCStyleCast:         false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens:            ControlStatements
+SpaceInEmptyParentheses:      false
+SpacesInCStyleCastParentheses: false
+
+# Line breaking
+# BlockIndent: when params/args don't fit on one line, break after '(', put
+# each on its own line, and place the closing ')' on its own line.
+BinPackArguments:             false
+BinPackParameters:            false
+AlignAfterOpenBracket:        BlockIndent
+
+# Trailing commas
+InsertTrailingCommas:         None
+
+# Comments
+ReflowComments:               false
+SpacesBeforeTrailingComments: 2
+
+# Includes — preserve order (include order can affect FreeRTOS builds)
+SortIncludes:                 Never
+IncludeBlocks:                Preserve
+
+# Alignment
+AlignConsecutiveAssignments:
+  Enabled:         true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignConsecutiveMacros:
+  Enabled:         true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignEscapedNewlines:    Left
+AlignTrailingComments:   true
+...
