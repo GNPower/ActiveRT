@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/GNPower/ActiveRT/actions/workflows/ci.yml/badge.svg)](https://github.com/GNPower/ActiveRT/actions/workflows/ci.yml)
 [![Static Analysis](https://github.com/GNPower/ActiveRT/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/GNPower/ActiveRT/actions/workflows/static-analysis.yml)
-[![Docs](https://readthedocs.org/projects/activert/badge/?version=dev)](https://activert.readthedocs.io/en/dev/)
+[![Docs](https://readthedocs.org/projects/activert/badge/?version=dev)](https://activert.readthedocs.io)
 
 **ActiveRT** is a lightweight C framework that implements the
 [Active Object design pattern](https://en.wikipedia.org/wiki/Active_object)
