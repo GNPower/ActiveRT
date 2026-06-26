@@ -317,9 +317,9 @@ int activert_stats_health_check(activert_health_check_t* result)
         }
 
         // Check stack usage. uxTaskGetStackHighWaterMark returns a count of
-        // StackType_t in words. Convert to and report the thresholds in bytes 
-        // (warning < 512 bytes, critical < 256 bytes). Skip stopped AOs 
-        // (thread == NULL) as FreeRTOS would otherwise treat NULL as 
+        // StackType_t in words. Convert to and report the thresholds in bytes
+        // (warning < 512 bytes, critical < 256 bytes). Skip stopped AOs
+        // (thread == NULL) as FreeRTOS would otherwise treat NULL as
         // "the calling task" and report the wrong task's stack.
         if (active->thread != NULL)
         {

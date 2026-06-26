@@ -85,11 +85,23 @@ void test_queue_less_ao_with_dispatch_does_not_crash(void)
     g_qless_notify = 0;
 
     activert_active_t* ao = activert_active_create_with_notification_static(
-        "qless", qless_dispatch, qless_notify, 3,
-        qless_stack, sizeof(qless_stack), &qless_tcb,
-        NULL, 0,                 /* num_queues == 0 (notification-only) */
-        NULL, NULL, NULL, NULL, &qless_sem_cb,
-        &qless_ao_storage, NULL);
+        "qless",
+        qless_dispatch,
+        qless_notify,
+        3,
+        qless_stack,
+        sizeof(qless_stack),
+        &qless_tcb,
+        NULL,
+        0, /* num_queues == 0 (notification-only) */
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        &qless_sem_cb,
+        &qless_ao_storage,
+        NULL
+    );
 
     TEST_ASSERT_NOT_NULL(ao);
 
@@ -160,10 +172,23 @@ void test_notification_ao_macro_sized_storage_no_corruption(void)
     activert_event_t** qsa[1] = {n_qstore};
 
     activert_active_t* ao = activert_active_create_with_notification_static(
-        "nao", n_dispatch, n_notify, 3,
-        n_stack, sizeof(n_stack), &n_tcb,
-        &cfg, 1, &n_qcb, qsa, &n_set_cb, n_set_store, &n_sem_cb,
-        &n_ao_storage, &n_qstruct);
+        "nao",
+        n_dispatch,
+        n_notify,
+        3,
+        n_stack,
+        sizeof(n_stack),
+        &n_tcb,
+        &cfg,
+        1,
+        &n_qcb,
+        qsa,
+        &n_set_cb,
+        n_set_store,
+        &n_sem_cb,
+        &n_ao_storage,
+        &n_qstruct
+    );
     TEST_ASSERT_NOT_NULL(ao);
 
     for (int i = 0; i < NQ; i++)
@@ -244,7 +269,7 @@ void test_failed_post_returns_error_and_caller_owns_event(void)
     e2->base.sig = SIG_A;
     e3->base.sig = SIG_A;
 
-    TEST_ASSERT_EQUAL_INT(0, activert_active_post(fp_ao, &e1->base));  /* queue depth 2 */
+    TEST_ASSERT_EQUAL_INT(0, activert_active_post(fp_ao, &e1->base)); /* queue depth 2 */
     TEST_ASSERT_EQUAL_INT(0, activert_active_post(fp_ao, &e2->base));
     TEST_ASSERT_EQUAL_INT(-1, activert_active_post(fp_ao, &e3->base)); /* full */
 
@@ -300,10 +325,23 @@ void test_notify_zero_delivered_on_semaphore_path(void)
     activert_event_t** qsa[1] = {nz_qstore};
 
     activert_active_t* ao = activert_active_create_with_notification_static(
-        "nzao", nz_dispatch, nz_notify, 3,
-        nz_stack, sizeof(nz_stack), &nz_tcb,
-        &cfg, 1, &nz_qcb, qsa, &nz_set_cb, nz_set_store, &nz_sem_cb,
-        &nz_ao_storage, &nz_qstruct);
+        "nzao",
+        nz_dispatch,
+        nz_notify,
+        3,
+        nz_stack,
+        sizeof(nz_stack),
+        &nz_tcb,
+        &cfg,
+        1,
+        &nz_qcb,
+        qsa,
+        &nz_set_cb,
+        nz_set_store,
+        &nz_sem_cb,
+        &nz_ao_storage,
+        &nz_qstruct
+    );
     TEST_ASSERT_NOT_NULL(ao);
     vTaskDelay(pdMS_TO_TICKS(20));
 

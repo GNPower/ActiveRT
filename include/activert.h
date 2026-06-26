@@ -93,11 +93,11 @@ extern "C"
 #define activert_notify(ao, bits)           activert_active_notify((ao), (bits))
 #define activert_notify_isr(ao, bits, wake) activert_active_notify_from_isr((ao), (bits), (wake))
 
-/*******************************************************************************
+    /*******************************************************************************
 * Quick Reference - Common Patterns
 *******************************************************************************/
 
-/*
+    /*
  * PATTERN 1: Create Event Pool
  * 
  *   #define POOL_SIZE 10
@@ -140,7 +140,7 @@ extern "C"
  *   );
  */
 
-/*
+    /*
  * PATTERN 3: Post Event to Active Object
  * 
  *   my_event_t* evt = (my_event_t*)activert_event_alloc(pool);
@@ -151,7 +151,7 @@ extern "C"
  *   }
  */
 
-/*
+    /*
  * PATTERN 4: Dispatch Handler
  * 
  *   void my_dispatch_handler(activert_active_t* me, activert_event_t* evt) {
@@ -168,7 +168,7 @@ extern "C"
  *   }
  */
 
-/*
+    /*
  * PATTERN 5: Multi-Queue Active Object
  *
  *   static StaticQueue_t queue_cbs[2];
@@ -197,7 +197,7 @@ extern "C"
  *   );
  */
 
-/*
+    /*
  * PATTERN 6: Notification Handler (ISR -> Task)
  *
  *   void my_notify_handler(activert_active_t* me, uint32_t value) {
@@ -226,7 +226,7 @@ extern "C"
  *   activert_notify_from_isr(ao, 0x1234, NULL);
  */
 
-/*
+    /*
  * PATTERN 7: Loop Task (No Queue, No Notifications)
  *
  *   void my_loop_fn(activert_active_t* me) {

@@ -33,12 +33,16 @@ typedef struct
     uint32_t v;
 } ev_t;
 
-void setUp(void) {}
-void tearDown(void) {}
+void setUp(void)
+{
+}
+void tearDown(void)
+{
+}
 
 static int count_pool_occurrences(const activert_event_pool_t* pool)
 {
-    int n = 0;
+    int n        = 0;
     size_t count = activert_stats_get_pool_count();
     for (size_t i = 0; i < count; i++)
     {
@@ -52,7 +56,7 @@ static int count_pool_occurrences(const activert_event_pool_t* pool)
 
 static int count_active_occurrences(const activert_active_t* ao)
 {
-    int n = 0;
+    int n        = 0;
     size_t count = activert_stats_get_active_count();
     for (size_t i = 0; i < count; i++)
     {

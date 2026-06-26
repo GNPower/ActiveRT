@@ -78,7 +78,7 @@ void test_dynamic_single_queue_create_dispatch_destroy(void)
         .signal_base = 0, .signal_count = 0, .queue_length = 4, .event_pool = dp_pool
     };
 
-    size_t a0 = activert_stats_get_active_count();
+    size_t a0             = activert_stats_get_active_count();
     activert_active_t* ao = activert_active_create_dynamic("dyn1", dp_dispatch, 2, 4096, &cfg, 1);
     TEST_ASSERT_NOT_NULL(ao);
     TEST_ASSERT_NOT_NULL(ao->queues);
@@ -106,14 +106,14 @@ void test_dynamic_multi_queue_create_routes_and_destroys(void)
         {.signal_base = SIG_B, .signal_count = 1, .queue_length = 4, .event_pool = dp_pool},
     };
 
-    size_t a0 = activert_stats_get_active_count();
+    size_t a0             = activert_stats_get_active_count();
     activert_active_t* ao = activert_active_create_dynamic("dyn2", dp_dispatch, 2, 4096, cfgs, 2);
     TEST_ASSERT_NOT_NULL(ao);
     TEST_ASSERT_NOT_NULL(ao->queues);
     TEST_ASSERT_EQUAL_UINT8(2, ao->queue_count);
 
-    ev_t* ea = (ev_t*)activert_event_pool_alloc(dp_pool);
-    ev_t* eb = (ev_t*)activert_event_pool_alloc(dp_pool);
+    ev_t* ea     = (ev_t*)activert_event_pool_alloc(dp_pool);
+    ev_t* eb     = (ev_t*)activert_event_pool_alloc(dp_pool);
     ea->base.sig = SIG_A;
     eb->base.sig = SIG_B;
     TEST_ASSERT_EQUAL_INT(0, activert_active_post(ao, &ea->base)); /* -> queue 0 */
@@ -166,7 +166,7 @@ void test_dynamic_overflow_events_do_not_leak(void)
     ev_t* held = (ev_t*)activert_event_pool_alloc(of_pool);
     TEST_ASSERT_NOT_NULL(held);
 
-    const int N = 50;
+    const int N        = 50;
     size_t heap_before = xPortGetFreeHeapSize();
 
     for (int i = 0; i < N; i++)

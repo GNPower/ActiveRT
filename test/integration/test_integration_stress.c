@@ -170,7 +170,9 @@ void test_shared_pool_under_load_reconciles(void)
         e->seq      = i;
 
         /* current_allocated must never exceed the pool capacity. */
-        TEST_ASSERT_LESS_OR_EQUAL_size_t(SH_POOL, SH_POOL - activert_event_pool_get_free_count(sh_pool));
+        TEST_ASSERT_LESS_OR_EQUAL_size_t(
+            SH_POOL, SH_POOL - activert_event_pool_get_free_count(sh_pool)
+        );
 
         activert_active_t* target = (i & 1U) ? sh_ao0 : sh_ao1;
         TEST_ASSERT_EQUAL_INT(0, activert_active_post(target, &e->base));

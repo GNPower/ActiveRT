@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-
 typedef struct
 {
     activert_event_t base;
@@ -71,7 +70,6 @@ static void free_tracked(activert_event_t* e)
     }
     activert_event_pool_free(e);
 }
-
 
 void test_pool_init_all_slots_free(void)
 {
@@ -214,7 +212,6 @@ void test_bitmap_size_is_initialized(void)
     size_t expected = (POOL_SIZE + 7) / 8;
     TEST_ASSERT_EQUAL_size_t(expected, test_pool->bitmap_size);
 }
-
 
 void run_tests(void)
 {

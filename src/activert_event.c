@@ -702,8 +702,7 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool)
 
     if (snap.allocs_attempted > 0U)
     {
-        float success_rate =
-            (float)snap.allocs_succeeded * 100.0F / (float)snap.allocs_attempted;
+        float success_rate = (float)snap.allocs_succeeded * 100.0F / (float)snap.allocs_attempted;
         printf("Success rate:   %.2f%%\n", success_rate);
     }
 

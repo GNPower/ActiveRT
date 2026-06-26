@@ -190,7 +190,7 @@ int activert_active_post_to_queue_from_isr(
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
 
-    // Runtime bounds guard on the caller-supplied queue index. 
+    // Runtime bounds guard on the caller-supplied queue index.
     // An out-of-range index is a failed post, not out-of-bounds access.
     if (queue_index >= me->queue_count)
     {

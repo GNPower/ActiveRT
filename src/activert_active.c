@@ -786,8 +786,7 @@ activert_active_t* activert_active_create_dynamic(
 
     // Allocate the queue array (the static path receives it from the caller.
     // The dynamic path must allocate it before writing through me->queues[i]).
-    me->queues =
-        (activert_queue_t*)ACTIVERT_MALLOC((size_t)num_queues * sizeof(activert_queue_t));
+    me->queues = (activert_queue_t*)ACTIVERT_MALLOC((size_t)num_queues * sizeof(activert_queue_t));
     if (me->queues == NULL)
     {
         ACTIVERT_FREE(me);

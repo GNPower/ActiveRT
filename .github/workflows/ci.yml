@@ -44,11 +44,30 @@ jobs:
     name: Build & Test (windows-latest)
     runs-on: windows-latest
 
+    # Run every step in the MSYS2 UCRT64 shell so the MinGW-w64 gcc, cmake, and
+    # ninja from the toolchain below are on PATH. ActiveRT builds against the
+    # FreeRTOS Windows-simulator port (MSVC_MINGW), which the MinGW toolchain
+    # drives directly — no Visual Studio install required.
+    defaults:
+      run:
+        shell: msys2 {0}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0   # Full history for `git describe` version detection
+
+      - name: Set up MSYS2 / MinGW-w64 toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
 
       - name: Configure (windows-test preset)
         run: cmake --preset windows-test

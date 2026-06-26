@@ -52,10 +52,11 @@
         {
             "name": "windows-test",
             "displayName": "Windows Build with Tests (Debug)",
-            "description": "Builds and runs the unit tests using the FreeRTOS Windows simulator (MSVC_MINGW port) on Windows.",
-            "generator": "Visual Studio 17 2022",
+            "description": "Builds and runs the unit tests using the FreeRTOS Windows simulator (MSVC_MINGW port). Uses the Ninja generator, which works with both MinGW (gcc) and MSVC (cl) toolchains without a Visual Studio install.",
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/windows-test",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE":              "Debug",
                 "ACTIVERT_BUILD_TESTS":          "ON",
                 "ACTIVERT_BUILD_DOCS":           "OFF",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
@@ -83,8 +84,7 @@
         },
         {
             "name": "windows-test",
-            "configurePreset": "windows-test",
-            "configuration": "Debug"
+            "configurePreset": "windows-test"
         }
     ],
     "testPresets": [
@@ -103,7 +103,6 @@
         {
             "name": "windows-test",
             "configurePreset": "windows-test",
-            "configuration": "Debug",
             "output": {
                 "outputOnFailure": true,
                 "verbosity": "verbose"
