@@ -12,9 +12,9 @@
 *   Ver     Who     Date        Changes
 *   -----   ----    ----------  -----------------------------------------------
 *   0.1.0   gnp     2025-11-01  Initial Active Object API with single-queue creation
-*   0.4.0   gnp     2025-12-13  Multi-queue create; ACTIVERT_ACTIVE_DEFINE_SIMPLE updated
-*   0.7.0   gnp     2026-01-24  Notification create variants; notify/notify_from_isr
-*   1.0.0   gnp     2026-02-28  Loop task API; ACTIVERT_ACTIVE_DEFINE_LOOP macro
+*   0.4.0   gnp     2025-12-13  Multi-queue create, ACTIVERT_ACTIVE_DEFINE_SIMPLE updated
+*   0.7.0   gnp     2026-01-24  Notification create variants, notify/notify_from_isr
+*   1.0.0   gnp     2026-02-28  Loop task API, ACTIVERT_ACTIVE_DEFINE_LOOP macro
 *
 *******************************************************************************/
 
@@ -22,6 +22,40 @@
 #define ACTIVERT_ACTIVE_H
 
 #include "activert_types.h"
+
+/*******************************************************************************
+* Queue Set Storage Sizing
+*
+* A FreeRTOS queue set holds one entry (a member handle, void* sized) for every
+* item that can be simultaneously pending across all of its members. For an
+* Active Object that is:
+*   - sum over all queues of queue_length entries (each queued event), PLUS
+*   - one entry for the notification semaphore, when the AO is created with
+*     activert_active_create_with_notification_static().
+*
+* Use these macros to size the queue_set_storage buffer correctly. Under-sizing
+* it (e.g. omitting the +1 for the notification semaphore) lets the kernel write
+* past the buffer when the set fills.
+*******************************************************************************/
+
+/**
+ * queue_set_storage size (bytes) for a multi-queue AO WITHOUT a notification
+ * semaphore (activert_active_create_static with num_queues > 1).
+ *
+ * @param total_queue_length  Sum of every queue's queue_length.
+ */
+#define ACTIVERT_QUEUE_SET_STORAGE_BYTES(total_queue_length) \
+    ((size_t)(total_queue_length) * sizeof(void*))
+
+/**
+ * queue_set_storage size (bytes) for an AO created WITH a notification
+ * semaphore (activert_active_create_with_notification_static), for any
+ * num_queues >= 1. Includes the +1 slot the notification semaphore occupies.
+ *
+ * @param total_queue_length  Sum of every queue's queue_length.
+ */
+#define ACTIVERT_NOTIFY_QUEUE_SET_STORAGE_BYTES(total_queue_length) \
+    (((size_t)(total_queue_length) + 1U) * sizeof(void*))
 
 /*******************************************************************************
 * Active Object Creation - Static Allocation
@@ -47,7 +81,8 @@
  *                      Each element is a caller-provided activert_event_t* array of queue_length
  * @param queue_set_cb  Pre-allocated StaticQueue_t (NULL if num_queues==1)
  * @param queue_set_storage Pre-allocated storage buffer (NULL if num_queues==1)
- *                      Size: sum(queue_lengths) * sizeof(void*) bytes
+ *                      Size: ACTIVERT_QUEUE_SET_STORAGE_BYTES(sum(queue_lengths)),
+ *                      i.e. sum(queue_lengths) * sizeof(void*) bytes
  * @param active_storage Pre-allocated activert_active_t struct
  * @param queue_structs Pre-allocated activert_queue_t array (num_queues elements)
  * @return              Pointer to Active Object, or NULL on error
@@ -92,9 +127,16 @@ activert_active_t* activert_active_create_static(
  * @param num_queues            Number of queues  (1 to ACTIVERT_MAX_QUEUES, 0 if notify-only)
  * @param queue_cbs             Pre-allocated StaticQueue_t array (NULL if notify-only)
  * @param queue_storages        Array of per-queue storage buffers (activert_queue_storage_t[num_queues], NULL if notify-only)
- * @param queue_set_cb          Pre-allocated StaticQueue_t (NULL if single/no queue)
- * @param queue_set_storage     Pre-allocated storage buffer (NULL if single/no queue)
- *                              Size: sum(queue_lengths) * sizeof(void*) bytes
+ * @param queue_set_cb          Pre-allocated StaticQueue_t. Required whenever
+ *                              num_queues >= 1 here (a notification AO always
+ *                              uses a queue set so it can wait on its queue(s)
+ *                              and the notification semaphore together). NULL
+ *                              only for the notification-only case (num_queues==0).
+ * @param queue_set_storage     Pre-allocated storage buffer. NULL only if num_queues==0.
+ *                              Size: ACTIVERT_NOTIFY_QUEUE_SET_STORAGE_BYTES(sum(queue_lengths)),
+ *                              i.e. (sum(queue_lengths) + 1) * sizeof(void*) bytes. The +1 is
+ *                              the notification semaphore's slot in the queue set, omitting it
+ *                              lets the kernel write one pointer past this buffer.
  * @param notify_sem_cb         Pre-allocated StaticSemaphore_t for notification semaphore
  *                              (NULL if notification-only task, required if queues + notifications)
  * @param active_storage        Pre-allocated activert_active_t struct

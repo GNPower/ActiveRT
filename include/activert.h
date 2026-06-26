@@ -36,10 +36,10 @@ extern "C"
 *******************************************************************************/
 
 #define ACTIVERT_VERSION_MAJOR 1
-#define ACTIVERT_VERSION_MINOR 0
+#define ACTIVERT_VERSION_MINOR 1
 #define ACTIVERT_VERSION_PATCH 0
 
-#define ACTIVERT_VERSION_STRING "1.0.0"
+#define ACTIVERT_VERSION_STRING "1.1.0"
 
 /*******************************************************************************
 * Core Includes (Order matters - dependencies)
@@ -198,7 +198,7 @@ extern "C"
  */
 
     /*
- * PATTERN 6: Notification Handler (ISR → Task)
+ * PATTERN 6: Notification Handler (ISR -> Task)
  *
  *   void my_notify_handler(activert_active_t* me, uint32_t value) {
  *       // Handle notification from ISR
@@ -206,6 +206,10 @@ extern "C"
  *
  *   static activert_active_t ao_storage;
  *   static activert_queue_t queue_struct;
+ *   static StaticQueue_t queue_set_cb;
+ *   static StaticSemaphore_t notify_sem_cb;
+ *   // Queue set holds every queued event PLUS the notification semaphore (+1):
+ *   static uint8_t queue_set_storage[ACTIVERT_NOTIFY_QUEUE_SET_STORAGE_BYTES(16)];
  *
  *   activert_active_t* ao = activert_active_create_with_notification_static(
  *       "ISR_Task",

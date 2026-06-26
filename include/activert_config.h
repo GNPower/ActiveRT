@@ -135,6 +135,18 @@
 #define ACTIVERT_ENTER_CRITICAL() taskENTER_CRITICAL()
 #define ACTIVERT_EXIT_CRITICAL()  taskEXIT_CRITICAL()
 
+/* Compiler memory barrier (prevents the compiler from reordering memory
+ * accesses across the barrier). Portable across GCC/Clang and MSVC, expands to
+ * nothing on unknown compilers. This is a compiler-only fence, not a CPU fence. */
+#if defined(__GNUC__) || defined(__clang__)
+    #define ACTIVERT_COMPILER_BARRIER() __asm__ volatile("" ::: "memory")
+#elif defined(_MSC_VER)
+    #include <intrin.h>
+    #define ACTIVERT_COMPILER_BARRIER() _ReadWriteBarrier()
+#else
+    #define ACTIVERT_COMPILER_BARRIER() ((void)0)
+#endif
+
 /* Memory allocation */
 #define ACTIVERT_MALLOC(size) pvPortMalloc(size)
 #define ACTIVERT_FREE(ptr)    vPortFree(ptr)

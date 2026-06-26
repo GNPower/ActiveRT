@@ -28,11 +28,15 @@ evt->sig = 17  // 16 <= 17 < 20  routes to queue 0 (cmd_queue)
 
 1. **Ranges must not overlap.** If a signal matches two queues, the
    event will go to the first matching queue.
-2. **All signals you post must fall within a declared range.** Signals
-   outside all ranges cause the post to fail and increment the
-   `posts_failed` counter.
-3. **Signals below `ACTIVERT_USER_SIG` (16)**, `ACTIVERT_INIT_SIG` and
-   `ACTIVERT_TERM_SIG`, are always routed to queue 0.
+2. **Signals outside every declared range go to the catch-all queue.** A queue
+   declared with `signal_count == 0` is the catch-all and receives any signal
+   that matches no other queue's range. If there is no catch-all queue, a post
+   whose signal matches no range fails and increments `posts_failed` /
+   `events_dropped`.
+3. **`ACTIVERT_INIT_SIG` and `ACTIVERT_TERM_SIG` are never posted through the
+   queues.** The framework delivers them directly to the dispatch handler
+   (INIT_SIG once at startup, TERM_SIG on `activert_active_stop`), so they are
+   not subject to signal-range routing.
 
 ## Choosing Signal Allocations
 
@@ -67,7 +71,7 @@ void DMA_IRQHandler(void)
 {
     BaseType_t woken = pdFALSE;
     data_event_t *evt = (data_event_t *)
-        activert_event_pool_alloc_from_isr(data_pool, &woken);
+        activert_event_pool_alloc_from_isr(data_pool);
     if (evt) {
         evt->base.sig = DATA_SAMPLE_SIG;   /* routed to data_queue */
         evt->sample   = DMA->BUFFER[0];

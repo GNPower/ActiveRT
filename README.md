@@ -21,7 +21,7 @@ Detailed documentation can be found at [ReadTheDocs](https://activert.readthedoc
 
 | Feature | Description |
 | --- | --- |
-| **Static allocation** | Zero-heap operation — all buffers provided by the caller |
+| **Static allocation** | Zero-heap operation, all buffers provided by the caller |
 | **Event pools** | Bitmap-based allocation with `DROP`, `ASSERT`, or `DYNAMIC` overflow policies |
 | **Multi-queue AOs** | Up to 8 queues per Active Object with signal-based routing |
 | **Task notifications** | Lightweight ISR -> task signalling without event allocation |
@@ -98,7 +98,12 @@ void send_command(uint32_t cmd)
     if (evt) {
         evt->base.sig = CMD_SIG;
         evt->value    = cmd;
-        activert_active_post(my_ao, &evt->base);
+        /* On success the AO owns the event and frees it after dispatch. On
+         * failure (queue full) the caller still owns it and must free it,
+         * otherwise the pool slot leaks. */
+        if (activert_active_post(my_ao, &evt->base) != 0) {
+            activert_event_pool_free(&evt->base);
+        }
     }
 }
 ```
@@ -121,7 +126,7 @@ target_link_libraries(my_firmware PRIVATE ActiveRT::activert)
 
 > **Note:** ActiveRT headers directly include FreeRTOS headers (`FreeRTOS.h`,
 > `task.h`, `queue.h`, `semphr.h`). Your embedded toolchain or BSP must supply
-> these — ActiveRT does not bundle FreeRTOS. The library target will not compile
+> these, ActiveRT does not bundle FreeRTOS. The library target will not compile
 > standalone; it is always built as part of an embedded project that provides
 > FreeRTOS in its include path.
 
@@ -188,4 +193,4 @@ Full API reference is published at the project's GitHub Pages site.
 
 ## License
 
-Copyright 2025-2026 Graham N. Power. All rights reserved.
+Copyright 2025-2026 GNPower. All rights reserved.

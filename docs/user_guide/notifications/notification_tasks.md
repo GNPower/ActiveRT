@@ -40,30 +40,52 @@ void my_dispatch(activert_active_t *me, const activert_event_t *e)
     }
 }
 
-/* Static storage requires queue set storage for the semaphore */
-static activert_active_t        s_my_ao;
-static StaticSemaphore_t        s_notify_sem_cb;
-/* ... queue, queue set, stack storage ... */
+/* Static storage for a single-queue notification AO (zero heap). The queue set
+ * holds every queued event PLUS the notification semaphore, so size
+ * queue_set_storage with the +1 via ACTIVERT_NOTIFY_QUEUE_SET_STORAGE_BYTES;
+ * omitting the +1 lets the kernel write one pointer past the buffer. */
+#define MY_QUEUE_LEN 8
+
+static StackType_t       s_stack[1024 / sizeof(StackType_t)];
+static StaticTask_t      s_task_cb;
+static activert_event_t *s_queue_storage[MY_QUEUE_LEN];
+static StaticQueue_t     s_queue_cb;
+static StaticQueue_t     s_queue_set_cb;
+static uint8_t           s_queue_set_storage[ACTIVERT_NOTIFY_QUEUE_SET_STORAGE_BYTES(MY_QUEUE_LEN)];
+static StaticSemaphore_t s_notify_sem_cb;
+static activert_active_t s_my_ao;
+static activert_queue_t  s_queue_struct;
 
 activert_active_t *my_ao = NULL;
 
-/* Initialise */
+/* Initialize */
 void app_init(void)
 {
+    activert_queue_config_t cfg = {
+        .signal_base = 0, 
+        .signal_count = 0,          /* catch-all queue */
+        .queue_length = MY_QUEUE_LEN, 
+        .event_pool = my_pool
+    };
+    activert_event_t **queue_storages[1] = { s_queue_storage };
+
     my_ao = activert_active_create_with_notification_static(
-        &s_my_ao,
-        my_dispatch,
-        my_notify_handler,
-        5,                 /* priority */
-        queue_cfgs,
-        num_queues,
-        queue_storages,
-        queue_cbs,
-        stack,
-        &s_task_cb,
-        &s_notify_sem_cb,
-        queue_set_storage,
-        &s_queue_set_cb
+        "my_ao",                    /* name */
+        my_dispatch,                /* dispatch function */
+        my_notify_handler,          /* notify_handler function */
+        5,                          /* priority */
+        s_stack,                    /* stack */
+        sizeof(s_stack),            /* stack size */
+        &s_task_cb,                 /* task cb */
+        &cfg,                       /* queue configs */
+        1,                          /* num_queues */
+        &s_queue_cb,                /* queue cbs */
+        queue_storages,             /* queue storages */
+        &s_queue_set_cb,            /* queue set cb */
+        s_queue_set_storage,        /* queue set storage */
+        &s_notify_sem_cb,           /* notify semaphore callback */
+        &s_my_ao,                   /* active object storage */
+        &s_queue_struct             /* queue structs */
     );
 }
 ```
@@ -93,20 +115,23 @@ A notification AO places a binary semaphore into its queue set alongside
 its regular event queue(s). When `activert_active_notify_from_isr` is
 called:
 
-1. The 32-bit notification value is written to the AO's `notification.pending_value` field (atomic on Cortex-M).
+1. The notification bits are OR-accumulated into the AO's
+   `notification.pending_value` field under a critical section, and a
+   `pending` flag is set (so a notify with a value of 0 is still delivered).
 2. `xSemaphoreGiveFromISR` is called on the AO's notification semaphore.
 3. The queue set wakes, `xQueueSelectFromSet` returns the semaphore handle.
-4. The event loop recognises the semaphore, reads `pending_value`, and calls
-   `notification_handler(me, pending_value)`.
+4. The event loop recognizes the semaphore, reads and clears `pending_value`,
+   and calls `notification_handler(me, pending_value)`.
 
 This is equivalent to a zero-copy, zero-allocation event path.
 
 ## Limitations
 
-- Only one notification value is stored. If the ISR fires again before the
-  AO processes the first notification, the value is overwritten. Design
-  your system to tolerate this, or use a regular event queue if every
-  occurrence must be processed individually.
+- Notification bits are OR-accumulated into a single 32-bit value. If the ISR
+  fires several times before the AO processes the notification, the bits are
+  merged (set bits are preserved) but collected into one handler call, so the
+  count of occurrences is lost. Use a regular event queue if every occurrence
+  must be processed individually.
 - The notification semaphore counts as one slot in the queue set, so the
   queue set must be sized accordingly (handled automatically by
   `activert_active_create_with_notification_static`).

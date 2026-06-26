@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.16)
 include(FetchContent)
 
 ################################################################################
-# FreeRTOS Kernel — POSIX port
+# FreeRTOS Kernel POSIX port
 ################################################################################
 
 FetchContent_Declare(
@@ -33,13 +33,25 @@ FetchContent_Declare(
 # that provides FreeRTOSConfig.h.
 add_library(freertos_config INTERFACE)
 
+# Select the host simulator port and matching FreeRTOSConfig.h by platform:
+#   - Windows  -> MSVC_MINGW port (Win32 threads works with MSVC cl and MinGW)
+#   - Linux/macOS -> GCC_POSIX port (pthreads)
+# ACTIVERT_FRC_DIR is the directory holding the platform's FreeRTOSConfig.h, it
+# is reused by each test target's include path below.
+if(WIN32)
+    set(ACTIVERT_FRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/windows_config")
+    set(FREERTOS_PORT "MSVC_MINGW" CACHE STRING "FreeRTOS port" FORCE)
+else()
+    set(ACTIVERT_FRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/posix_config")
+    set(FREERTOS_PORT "GCC_POSIX" CACHE STRING "FreeRTOS port" FORCE)
+endif()
+
 target_include_directories(freertos_config SYSTEM INTERFACE
-    "${CMAKE_CURRENT_SOURCE_DIR}/posix_config"    # FreeRTOSConfig.h
+    "${ACTIVERT_FRC_DIR}"    # FreeRTOSConfig.h
 )
 
-# Force the POSIX port and heap_4.c (malloc-backed FreeRTOS heap)
-set(FREERTOS_PORT "GCC_POSIX" CACHE STRING "FreeRTOS port" FORCE)
-set(FREERTOS_HEAP "4"         CACHE STRING "FreeRTOS heap impl" FORCE)
+# Force heap_4.c (malloc-backed FreeRTOS heap)
+set(FREERTOS_HEAP "4" CACHE STRING "FreeRTOS heap impl" FORCE)
 
 FetchContent_MakeAvailable(freertos_kernel)
 
@@ -83,14 +95,17 @@ set(ACTIVERT_LIB_SOURCES
 )
 
 ################################################################################
-# Helper function: add_activert_test(name source)
+# Helper function: add_activert_test(name source [extra compile defs...])
 #
 # Creates a test executable from:
 #   - The named unit test source file (must define run_tests())
 #   - common/freertos_test_main.c  (starts scheduler, calls run_tests())
 #   - All ActiveRT library sources
 #
-# Links against freertos_kernel, unity, and pthread.
+# Any extra arguments (ARGN) are added as PRIVATE compile definitions to the
+# whole target (test + library sources), e.g. ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1.
+#
+# Links against freertos_kernel, unity, and (POSIX) pthread / (Windows) winmm.
 # Registers with CTest.
 ################################################################################
 
@@ -101,25 +116,41 @@ function(add_activert_test TEST_NAME TEST_SOURCE)
         ${ACTIVERT_LIB_SOURCES}
     )
 
+    if(ARGN)
+        target_compile_definitions(${TEST_NAME} PRIVATE ${ARGN})
+    endif()
+
     target_include_directories(${TEST_NAME} PRIVATE
         "${CMAKE_SOURCE_DIR}/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/posix_config"    # FreeRTOSConfig.h
+        "${ACTIVERT_FRC_DIR}"    # FreeRTOSConfig.h (platform-selected above)
         "${unity_SOURCE_DIR}/src"
     )
 
     target_link_libraries(${TEST_NAME} PRIVATE
         freertos_kernel
         unity
-        pthread
     )
 
-    # Suppress overzealous warnings from FreeRTOS internals on some GCC versions
-    target_compile_options(${TEST_NAME} PRIVATE
-        -Wno-unused-parameter
-        -Wno-pedantic
-    )
+    if(WIN32)
+        # Windows simulator port implements the tick via the multimedia timer.
+        # (Also pulled in transitively by freertos_kernel, linked explicitly to
+        # be robust across CMake versions.)
+        target_link_libraries(${TEST_NAME} PRIVATE winmm)
+    else()
+        # POSIX port runs tasks as pthreads.
+        target_link_libraries(${TEST_NAME} PRIVATE pthread)
+    endif()
 
-    # Timeout: if a test deadlocks the scheduler will spin; abort after 30s
+    # Suppress overzealous warnings from FreeRTOS internals (GCC/Clang only,
+    # these flags are not understood by MSVC cl.exe).
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${TEST_NAME} PRIVATE
+            -Wno-unused-parameter
+            -Wno-pedantic
+        )
+    endif()
+
+    # Timeout: if a test deadlocks the scheduler will spin abort after 30s
     add_test(
         NAME    ${TEST_NAME}
         COMMAND ${TEST_NAME}
@@ -139,3 +170,28 @@ add_activert_test(test_active_basic
 
 add_activert_test(test_stats_registry
     "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_stats_registry.c")
+
+################################################################################
+# Regression tests
+################################################################################
+
+add_activert_test(test_regression_core
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_regression_core.c")
+
+# Lifecycle / stats fixes: double-free guard, registry de-dup, health check.
+add_activert_test(test_regression_lifecycle
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_regression_lifecycle.c")
+
+# Dynamic-allocation paths (queues-array allocation, unregister-on-destroy,
+# dynamic-overflow event freeing). Compiled with ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1.
+add_activert_test(test_dynamic_paths
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_dynamic_paths.c"
+    ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1)
+
+################################################################################
+# Integration / stress tests
+################################################################################
+
+add_activert_test(test_integration_stress
+    "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_integration_stress.c")
+

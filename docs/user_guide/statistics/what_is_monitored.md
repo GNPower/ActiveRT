@@ -6,19 +6,23 @@ When `ACTIVERT_ENABLE_STATS=1`, ActiveRT tracks the following metrics.
 
 ## Active Object Metrics
 
-Accessible via `activert_active_print_stats(ao)` or the individual getter
-functions:
+Accessible via `activert_active_print_stats(ao)`, the `ao->stats` struct
+(`activert_active_stats_t`), or the dedicated getters noted below:
 
-| Metric | Getter | Description |
+| Metric | Access | Description |
 | --- | --- | --- |
-| Events processed | `activert_stats_get_events_processed(ao)` | Total dispatch handler invocations |
-| Events dropped | `activert_stats_get_events_dropped(ao)` | Posts that found all queues full |
-| Notifications received | `activert_stats_get_notifications_received(ao)` | Notification handler invocations |
-| Min dispatch time | `activert_stats_get_min_dispatch_us(ao)` | Fastest single dispatch (µs) |
-| Max dispatch time | `activert_stats_get_max_dispatch_us(ao)` | Slowest single dispatch (µs) |
-| Total dispatch time | `activert_stats_get_total_dispatch_us(ao)` | Cumulative handler runtime (µs) |
+| Events processed | `ao->stats.events_processed` | Total dispatch handler invocations |
+| Events dropped | `ao->stats.events_dropped` | Posts with no route or a full queue |
+| Notifications received | `ao->stats.notifications_received` / `activert_active_get_notification_count(ao)` | Notification handler invocations |
+| Total processing time | `ao->stats.total_processing_time` | Cumulative handler runtime (ticks) |
+| Average processing time | `ao->stats.avg_processing_time` | Mean handler runtime (ticks) |
+| Max processing time | `ao->stats.max_processing_time` | Slowest single dispatch (ticks) |
+| Slowest signal | `ao->stats.slowest_signal` | Signal with the max processing time |
 | Stack high-water | `activert_active_get_stack_high_water(ao)` | Free stack bytes remaining |
-| Priority | *(in print output)* | FreeRTOS task priority |
+| Priority | `activert_active_get_priority(ao)` | FreeRTOS priority (0-based) |
+
+Processing-time metrics require `ACTIVERT_ENABLE_TIMING_STATS=1` and are measured
+in RTOS ticks (not microseconds).
 
 ---
 
@@ -79,16 +83,17 @@ Event Pools (2):
 
 ## Health Checks
 
-`activert_stats_check_health(ao)` evaluates the following thresholds:
+`activert_stats_health_check(&result)` evaluates the following thresholds
+across every registered Active Object and pool:
 
 | Condition | Level |
 | --- | --- |
 | Queue utilisation > 80 % | `WARNING` |
-| Pool failure rate > 5 % | `WARNING` |
-| Stack free < 10 % of total | `WARNING` |
+| Any pool allocation failure (`allocs_failed > 0`) | `WARNING` |
+| Stack free < 512 bytes | `WARNING` |
 | Queue overflow recorded (any `posts_failed > 0`) | `CRITICAL` |
 | Pool failure rate > 50 % | `CRITICAL` |
-| Stack free < 5 % of total | `CRITICAL` |
+| Stack free < 256 bytes | `CRITICAL` |
 
 ```c
 activert_health_status_t h = activert_stats_check_health(my_ao);
@@ -119,7 +124,7 @@ For logging to non-volatile storage or transmitting over a network:
 
 ```c
 size_t  size = activert_stats_get_export_size();
-uint8_t buf[size];    /* or pvPortMalloc, must be 4-byte aligned */
+uint8_t buf[size];    /* any alignment works as the header is written with memcpy */
 activert_stats_export(buf, size);
 /* buf now contains a compact binary snapshot of all stats */
 ```
@@ -131,12 +136,15 @@ activert_stats_export(buf, size);
 Register real-time alert callbacks instead of polling:
 
 ```c
-/* Called when queue depth changes for AO index 0, queue 0 */
-activert_stats_monitor_queue_depth(my_ao, 0, on_depth_change_cb);
+/* Threshold is a queue-utilization percentage (0-100). */
+activert_stats_monitor_queue_depth(80, on_depth_change_cb);
 
-/* Called when the pool allocation failure count increments */
-activert_stats_monitor_pool_exhaustion(my_pool, on_pool_exhaustion_cb);
+/* Invoked for pool allocation failures. */
+activert_stats_monitor_pool_exhaustion(on_pool_exhaustion_cb);
 
-/* Called when stack free bytes fall below a threshold */
-activert_stats_monitor_stack_usage(my_ao, on_stack_low_cb);
+/* Threshold is free stack in bytes. */
+activert_stats_monitor_stack_usage(256, on_stack_low_cb);
 ```
+
+The callback type is `activert_monitor_callback_t(activert_active_t *active,
+activert_event_pool_t *pool, const char *message)`.

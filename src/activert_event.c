@@ -96,6 +96,20 @@ static void mark_event_free(activert_event_pool_t* pool, size_t event_idx)
 }
 
 /**
+ * Test whether an event slot is currently marked allocated
+ *
+ * @param pool          Pool
+ * @param event_idx     Event index
+ * @return              true if the slot's bitmap bit is set (allocated)
+ */
+static bool is_event_allocated(const activert_event_pool_t* pool, size_t event_idx)
+{
+    size_t byte_idx = event_idx >> 3U;
+    uint8_t bit_idx = (uint8_t)(event_idx & 7U);
+    return (pool->usage_bitmap[byte_idx] & (1U << bit_idx)) != 0U;
+}
+
+/**
  * Get pointer to event at index
  * 
  * @param pool          Pool
@@ -206,15 +220,6 @@ activert_event_pool_t* activert_event_pool_create(
     // Initialize bitmap (all zeros = all free)
     memset(pool->usage_bitmap, 0, bitmap_bytes);
 
-    // Create mutex for thread-safe access
-    pool->mutex = xSemaphoreCreateMutex();
-    if (pool->mutex == NULL)
-    {
-        ACTIVERT_FREE(pool->usage_bitmap);
-        ACTIVERT_FREE(pool);
-        return NULL;
-    }
-
 // Initialize pool fields
 #if ACTIVERT_ENABLE_NAMES
     pool->name = name;
@@ -222,6 +227,7 @@ activert_event_pool_t* activert_event_pool_create(
     pool->pool_memory = pool_memory;
     pool->event_size  = event_size;
     pool->pool_size   = pool_size;
+    pool->bitmap_size = bitmap_bytes;
     pool->policy      = policy;
 
 // Initialize statistics
@@ -231,10 +237,10 @@ activert_event_pool_t* activert_event_pool_create(
 
 #if ACTIVERT_ENABLE_DEBUG
     printf(
-        "activert_event_pool_create: Created pool '%s' with %zu events of %zu bytes each\n",
+        "activert_event_pool_create: Created pool '%s' with %u events of %u bytes each\n",
         name ? name : "unnamed",
-        pool_size,
-        event_size
+        (unsigned int)pool_size,
+        (unsigned int)event_size
     );
 #endif /* ACTIVERT_ENABLE_DEBUG */
 
@@ -264,9 +270,6 @@ void activert_event_pool_init_static(
     size_t bitmap_bytes = (pool_size + 7U) >> 3U;  // Divide by 8 to get byte count
     memset(bitmap, 0, bitmap_bytes);
 
-    pool->mutex = xSemaphoreCreateMutexStatic(&pool->mutex_buffer);
-    ACTIVERT_ASSERT(pool->mutex != NULL);
-
 #if ACTIVERT_ENABLE_NAMES
     pool->name = name;
 #else  /* ACTIVERT_ENABLE_NAMES */
@@ -276,6 +279,7 @@ void activert_event_pool_init_static(
     pool->usage_bitmap = bitmap;
     pool->event_size   = event_size;
     pool->pool_size    = pool_size;
+    pool->bitmap_size  = bitmap_bytes;
     pool->policy       = policy;
 
 #if ACTIVERT_ENABLE_STATS
@@ -284,11 +288,11 @@ void activert_event_pool_init_static(
 
 #if ACTIVERT_ENABLE_DEBUG
     printf(
-        "activert_event_pool_init_static: Initialized pool '%s' with %zu events of %zu bytes "
+        "activert_event_pool_init_static: Initialized pool '%s' with %u events of %u bytes "
         "each\n",
         name ? name : "unnamed",
-        pool_size,
-        event_size
+        (unsigned int)pool_size,
+        (unsigned int)event_size
     );
 #endif /* ACTIVERT_ENABLE_DEBUG */
 
@@ -345,7 +349,12 @@ void activert_event_pool_destroy(activert_event_pool_t* pool)
         #endif /* ACTIVERT_ENABLE_NAMES */
     #endif     /* ACTIVERT_ENABLE_DEBUG */
 
-    vSemaphoreDelete(pool->mutex);
+    // Remove from the global stats registry before freeing, otherwise the
+    // registry retains a dangling pointer (use-after-free on the next walk).
+    #if ACTIVERT_ENABLE_STATS
+    activert_stats_unregister_pool(pool);
+    #endif /* ACTIVERT_ENABLE_STATS */
+
     ACTIVERT_FREE(pool->usage_bitmap);
     ACTIVERT_FREE(pool->pool_memory);
     ACTIVERT_FREE(pool);
@@ -361,15 +370,12 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
 {
     ACTIVERT_ASSERT(pool != NULL);
 
+    // Critical section for thread-safe access
+    ACTIVERT_ENTER_CRITICAL();
+
 #if ACTIVERT_ENABLE_STATS
     pool->stats.allocs_attempted++;
 #endif /* ACTIVERT_ENABLE_STATS */
-
-    // Take mutex for thread-safe access
-    if (xSemaphoreTake(pool->mutex, portMAX_DELAY) != pdTRUE)
-    {
-        return NULL;
-    }
 
     // Find free event
     int event_idx = find_free_event(pool);
@@ -377,11 +383,11 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
     if (event_idx < 0)
     {
         // Pool exhausted
-        xSemaphoreGive(pool->mutex);
-
 #if ACTIVERT_ENABLE_STATS
         pool->stats.allocs_failed++;
 #endif /* ACTIVERT_ENABLE_STATS */
+
+        ACTIVERT_EXIT_CRITICAL();
 
 #if ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION
     #if ACTIVERT_ENABLE_NAMES
@@ -442,7 +448,7 @@ activert_event_t* activert_event_pool_alloc(activert_event_pool_t* pool)
     }
 #endif /* ACTIVERT_ENABLE_STATS */
 
-    xSemaphoreGive(pool->mutex);
+    ACTIVERT_EXIT_CRITICAL();
 
 #if ACTIVERT_ENABLE_DEBUG
     printf(
@@ -459,12 +465,11 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
 {
     ACTIVERT_ASSERT(pool != NULL);
 
+    UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
+
 #if ACTIVERT_ENABLE_STATS
     pool->stats.allocs_attempted++;
 #endif /* ACTIVERT_ENABLE_STATS */
-
-    // Use critical section — xSemaphoreTakeFromISR does not support mutexes
-    UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
 
     // Find free event
     int event_idx = find_free_event(pool);
@@ -472,13 +477,12 @@ activert_event_t* activert_event_pool_alloc_from_isr(activert_event_pool_t* pool
     if (event_idx < 0)
     {
         // Pool exhausted
-        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
-
 #if ACTIVERT_ENABLE_STATS
         pool->stats.allocs_failed++;
 #endif /* ACTIVERT_ENABLE_STATS */
 
         // In ISR, we can only drop events
+        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
         return NULL;
     }
 
@@ -527,20 +531,25 @@ void activert_event_pool_free(activert_event_t* event)
 
     activert_event_pool_t* pool = event->pool;
 
-    // Take mutex
-    if (xSemaphoreTake(pool->mutex, portMAX_DELAY) != pdTRUE)
-    {
-        return;
-    }
+    // Critical section (mutually excludes task and ISR context)
+    ACTIVERT_ENTER_CRITICAL();
 
     // Get event index
     int event_idx = get_event_index(pool, event);
 
     if (event_idx < 0)
     {
-        // Event not in pool - error!
-        xSemaphoreGive(pool->mutex);
+        // Event not in pool, error!
+        ACTIVERT_EXIT_CRITICAL();
         ACTIVERT_ASSERT(0);
+        return;
+    }
+
+    // Reject a double free: the slot is already free. Returning without touching
+    // the bitmap or counters prevents current_allocated from underflowing.
+    if (!is_event_allocated(pool, (size_t)event_idx))
+    {
+        ACTIVERT_EXIT_CRITICAL();
         return;
     }
 
@@ -553,7 +562,7 @@ void activert_event_pool_free(activert_event_t* event)
     pool->stats.current_allocated--;
 #endif /* ACTIVERT_ENABLE_STATS */
 
-    xSemaphoreGive(pool->mutex);
+    ACTIVERT_EXIT_CRITICAL();
 }
 
 void activert_event_pool_free_from_isr(activert_event_t* event)
@@ -580,6 +589,14 @@ void activert_event_pool_free_from_isr(activert_event_t* event)
     {
         taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
         ACTIVERT_ASSERT(0);
+        return;
+    }
+
+    // Reject a double free: the slot is already free. Returning without touching
+    // the bitmap or counters prevents current_allocated from underflowing.
+    if (!is_event_allocated(pool, (size_t)event_idx))
+    {
+        taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
         return;
     }
 
@@ -629,7 +646,7 @@ void activert_event_pool_reset_stats(activert_event_pool_t* pool)
 {
     ACTIVERT_ASSERT(pool != NULL);
 
-    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    ACTIVERT_ENTER_CRITICAL();
 
     // Reset counters but keep current_allocated
     uint32_t current = pool->stats.current_allocated;
@@ -637,14 +654,19 @@ void activert_event_pool_reset_stats(activert_event_pool_t* pool)
     pool->stats.current_allocated = current;
     pool->stats.peak_allocated    = current;
 
-    xSemaphoreGive(pool->mutex);
+    ACTIVERT_EXIT_CRITICAL();
 }
 
 void activert_event_pool_print_stats(activert_event_pool_t* pool)
 {
     ACTIVERT_ASSERT(pool != NULL);
 
-    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    // Snapshot the stats under a brief critical section, then print outside it
+    // (printf must never run inside an interrupt-masking critical section).
+    activert_event_pool_stats_t snap;
+    ACTIVERT_ENTER_CRITICAL();
+    snap = pool->stats;
+    ACTIVERT_EXIT_CRITICAL();
 
     printf("================================================================\n");
     #if ACTIVERT_ENABLE_NAMES
@@ -654,40 +676,37 @@ void activert_event_pool_print_stats(activert_event_pool_t* pool)
     #endif
     printf("================================================================\n");
     printf(
-        "Size:           %zu events x %zu bytes = %zu bytes\n",
-        pool->pool_size,
-        pool->event_size,
-        pool->pool_size * pool->event_size
+        "Size:           %u events x %u bytes = %u bytes\n",
+        (unsigned int)pool->pool_size,
+        (unsigned int)pool->event_size,
+        (unsigned int)(pool->pool_size * pool->event_size)
     );
     printf(
-        "Current:        %u / %zu (%u%%)\n",
-        pool->stats.current_allocated,
-        pool->pool_size,
-        (uint32_t)(((size_t)pool->stats.current_allocated * 100U) / pool->pool_size)
+        "Current:        %u / %u (%u%%)\n",
+        (unsigned int)snap.current_allocated,
+        (unsigned int)pool->pool_size,
+        (unsigned int)(((size_t)snap.current_allocated * 100U) / pool->pool_size)
     );
     printf(
-        "Peak:           %u / %zu (%u%%)\n",
-        pool->stats.peak_allocated,
-        pool->pool_size,
-        (uint32_t)(((size_t)pool->stats.peak_allocated * 100U) / pool->pool_size)
+        "Peak:           %u / %u (%u%%)\n",
+        (unsigned int)snap.peak_allocated,
+        (unsigned int)pool->pool_size,
+        (unsigned int)(((size_t)snap.peak_allocated * 100U) / pool->pool_size)
     );
     printf(
         "Allocations:    %u (%u OK, %u failed)\n",
-        pool->stats.allocs_attempted,
-        pool->stats.allocs_succeeded,
-        pool->stats.allocs_failed
+        (unsigned int)snap.allocs_attempted,
+        (unsigned int)snap.allocs_succeeded,
+        (unsigned int)snap.allocs_failed
     );
 
-    if (pool->stats.allocs_attempted > 0U)
+    if (snap.allocs_attempted > 0U)
     {
-        float success_rate =
-            (float)pool->stats.allocs_succeeded * 100.0F / (float)pool->stats.allocs_attempted;
+        float success_rate = (float)snap.allocs_succeeded * 100.0F / (float)snap.allocs_attempted;
         printf("Success rate:   %.2f%%\n", success_rate);
     }
 
     printf("================================================================\n");
-
-    xSemaphoreGive(pool->mutex);
 }
 
 #endif /* ACTIVERT_ENABLE_STATS */

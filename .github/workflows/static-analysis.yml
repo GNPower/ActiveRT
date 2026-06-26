@@ -24,7 +24,7 @@ jobs:
         with:
           clang-format-version: "17"
           check-path: "."
-          exclude-regex: "(build|_deps|test/platform_stubs|test/posix_config|tools/misra)"
+          exclude-regex: "(build|_deps|test/platform_stubs|test/posix_config|test/windows_config|tools/misra)"
           fallback-style: "none"   # Fail if .clang-format is missing
 
   # -------------------------------------------------------------------------
@@ -101,7 +101,7 @@ jobs:
   # MISRA-C 2012: compliance check via cppcheck's misra addon.
   #
   # tools/misra/misra.json is committed (config only).
-  # tools/misra/misra_rules.txt is NOT committed (copyrighted) — it is
+  # tools/misra/misra_rules.txt is NOT committed (copyrighted), it is
   # decoded at runtime from the MISRA_RULES_B64 repository secret.
   #
   # To populate the secret (run once, from a machine that has the file):
