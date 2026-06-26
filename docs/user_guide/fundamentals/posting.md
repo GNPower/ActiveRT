@@ -36,7 +36,7 @@ void UART_IRQHandler(void)
     BaseType_t woken = pdFALSE;
 
     uart_event_t *evt = (uart_event_t *)
-        activert_event_pool_alloc_from_isr(uart_pool, &woken);
+        activert_event_pool_alloc_from_isr(uart_pool);
 
     if (evt != NULL) {
         evt->base.sig = UART_RX_SIG;

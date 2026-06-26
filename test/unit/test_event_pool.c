@@ -4,9 +4,6 @@
  * Unit tests for the ActiveRT event pool (activert_event.c).
  * Exercises static pool creation, alloc/free, exhaustion behaviour,
  * and statistics tracking.
- *
- * Runs inside a FreeRTOS task via freertos_test_main.c so that FreeRTOS
- * APIs (mutexes, etc.) are fully operational.
  ******************************************************************************/
 
 #include "unity.h"
@@ -15,18 +12,13 @@
 #include <stdint.h>
 #include <string.h>
 
-/*----------------------------------------------------------------------------
- * Test event type
- *--------------------------------------------------------------------------*/
+
 typedef struct
 {
-    activert_event_t base; /* Must be first member */
+    activert_event_t base;
     uint32_t data;
 } test_pool_event_t;
 
-/*----------------------------------------------------------------------------
- * Static pool storage — defined once, re-initialized in setUp()
- *--------------------------------------------------------------------------*/
 #define POOL_SIZE 8
 
 ACTIVERT_EVENT_POOL_DEFINE(test_pool, test_pool_event_t, POOL_SIZE, ACTIVERT_POOL_OVERFLOW_DROP);
@@ -35,12 +27,9 @@ ACTIVERT_EVENT_POOL_DEFINE(test_pool, test_pool_event_t, POOL_SIZE, ACTIVERT_POO
 static activert_event_t* s_held_events[POOL_SIZE];
 static int s_held_count;
 
-/*----------------------------------------------------------------------------
- * Unity setUp / tearDown
- *--------------------------------------------------------------------------*/
 void setUp(void)
 {
-    /* Reinitialise the pool — clears bitmap, resets stats, recreates mutex */
+    /* Reinitialise the pool, clears bitmap, resets stats, recreates mutex */
     ACTIVERT_EVENT_POOL_INIT(test_pool, test_pool_event_t, POOL_SIZE, ACTIVERT_POOL_OVERFLOW_DROP);
     s_held_count = 0;
     memset(s_held_events, 0, sizeof(s_held_events));
@@ -60,9 +49,6 @@ void tearDown(void)
     activert_event_pool_reset_stats(test_pool);
 }
 
-/*----------------------------------------------------------------------------
- * Helper: allocate and track an event
- *--------------------------------------------------------------------------*/
 static activert_event_t* alloc_tracked(void)
 {
     activert_event_t* e = activert_event_pool_alloc(test_pool);
@@ -86,9 +72,6 @@ static void free_tracked(activert_event_t* e)
     activert_event_pool_free(e);
 }
 
-/*============================================================================
- * Tests
- *==========================================================================*/
 
 void test_pool_init_all_slots_free(void)
 {
@@ -142,7 +125,7 @@ void test_peak_usage_tracks_high_water_mark(void)
 
     TEST_ASSERT_EQUAL_size_t(3, activert_event_pool_get_peak_usage(test_pool));
 
-    /* Free all three — peak must remain at 3 */
+    /* Free all three, peak must remain at 3 */
     free_tracked(e1);
     free_tracked(e2);
     free_tracked(e3);
@@ -206,7 +189,7 @@ void test_reset_stats_clears_peak_and_failures(void)
         alloc_tracked();
     activert_event_pool_alloc(test_pool); /* failure */
 
-    /* Free all events before reset — peak cannot go below current_allocated,
+    /* Free all events before reset. Peak cannot go below current_allocated,
      * so stats can only fully clear once there are no outstanding events. */
     for (int i = 0; i < s_held_count; i++)
     {
@@ -225,12 +208,18 @@ void test_reset_stats_clears_peak_and_failures(void)
     TEST_ASSERT_EQUAL_UINT32(0, activert_event_pool_get_alloc_attempts(test_pool));
 }
 
-/*----------------------------------------------------------------------------
- * run_tests — called by freertos_test_main.c
- *--------------------------------------------------------------------------*/
+void test_bitmap_size_is_initialized(void)
+{
+    /* The pool tracks its bitmap size in bytes: ceil(pool_size / 8). */
+    size_t expected = (POOL_SIZE + 7) / 8;
+    TEST_ASSERT_EQUAL_size_t(expected, test_pool->bitmap_size);
+}
+
+
 void run_tests(void)
 {
     RUN_TEST(test_pool_init_all_slots_free);
+    RUN_TEST(test_bitmap_size_is_initialized);
     RUN_TEST(test_alloc_returns_non_null);
     RUN_TEST(test_alloc_decrements_free_count);
     RUN_TEST(test_free_restores_free_count);

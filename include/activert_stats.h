@@ -2,7 +2,7 @@
 *   ActiveRT - Active Object Framework for FreeRTOS
 *
 *   @file       activert_stats.h
-*   @brief      Statistics and Instrumentation API
+*   @brief      Statistics API
 *   @author     Graham N. Power
 *   @date       2025-12-27
 *   @version    1.0.0
@@ -13,7 +13,7 @@
 *   -----   ----    ----------  -----------------------------------------------
 *   0.5.0   gnp     2025-12-27  Initial statistics API and global registry
 *   0.6.0   gnp     2026-01-10  Health check, performance summary, monitoring callbacks
-*   1.0.0   gnp     2026-02-28  Telemetry export; statistics reset; full report print
+*   1.0.0   gnp     2026-02-28  Telemetry export, statistics reset, full report print
 *
 *******************************************************************************/
 

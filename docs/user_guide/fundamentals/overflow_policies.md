@@ -32,8 +32,8 @@ running and handles events when capacity recovers. This is suitable for periodic
 sensor readings or status updates where the latest value is what matters.
 
 **Statistics:** `pool->stats.allocs_failed` increments on every drop.
-The health system raises a `WARNING` when the failure rate exceeds 5% and
-`CRITICAL` above 50%.
+The health system raises a `WARNING` on any allocation failure
+(`allocs_failed > 0`) and `CRITICAL` once the failure rate exceeds 50%.
 
 ---
 

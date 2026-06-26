@@ -115,7 +115,17 @@ int activert_active_post_to_queue(
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
-    ACTIVERT_ASSERT(queue_index < me->queue_count);
+
+    // Runtime bounds guard on the caller-supplied queue index. Unlike a bare
+    // ACTIVERT_ASSERT (compiled out in release builds), this prevents indexing
+    // past me->queues in every build. An out-of-range index is a failed post.
+    if (queue_index >= me->queue_count)
+    {
+#if ACTIVERT_ENABLE_STATS
+        me->stats.events_dropped++;
+#endif /* ACTIVERT_ENABLE_STATS */
+        return -1;
+    }
 
 #if ACTIVERT_ENABLE_STATS
     me->queues[queue_index].stats.posts_attempted++;
@@ -124,7 +134,7 @@ int activert_active_post_to_queue(
     // Post event to queue (non-blocking)
     // Queue stores activert_event_t*, so send the pointer value, not its address
     BaseType_t status = xQueueSendToBack(me->queues[queue_index].handle, (const void*)&event, 0);
-    __asm__ volatile("" ::: "memory");  // Memory barrier - prevents optimization
+    ACTIVERT_COMPILER_BARRIER();  // Portable compiler barrier (GCC/Clang/MSVC)
 
     if (status == pdPASS)
     {
@@ -179,7 +189,16 @@ int activert_active_post_to_queue_from_isr(
 {
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
-    ACTIVERT_ASSERT(queue_index < me->queue_count);
+
+    // Runtime bounds guard on the caller-supplied queue index. 
+    // An out-of-range index is a failed post, not out-of-bounds access.
+    if (queue_index >= me->queue_count)
+    {
+#if ACTIVERT_ENABLE_STATS
+        me->stats.events_dropped++;
+#endif /* ACTIVERT_ENABLE_STATS */
+        return -1;
+    }
 
 #if ACTIVERT_ENABLE_STATS
     me->queues[queue_index].stats.posts_attempted++;

@@ -49,7 +49,7 @@ void MY_IRQHandler(void)
     BaseType_t woken = pdFALSE;
 
     my_event_t *evt = (my_event_t *)
-        activert_event_pool_alloc_from_isr(my_pool, &woken);
+        activert_event_pool_alloc_from_isr(my_pool);
 
     if (evt != NULL) {
         evt->base.sig = MY_SIG;
@@ -124,7 +124,7 @@ In the rare case you need to free an event from an ISR (eg. you allocated from
 an ISR but the ISR itself decided not to post):
 
 ```c
-BaseType_t woken = pdFALSE;
-activert_event_pool_free_from_isr(&evt->base, &woken);
-portYIELD_FROM_ISR(woken);
+/* Freeing returns the slot to the pool. It does not unblock a task, so no
+ * pxHigherPriorityTaskWoken / portYIELD_FROM_ISR is needed here. */
+activert_event_pool_free_from_isr(&evt->base);
 ```

@@ -68,8 +68,10 @@ uint32_t activert_queue_flush(activert_active_t* me, uint8_t queue_index)
     // Receive and discard all events
     while (xQueueReceive(me->queues[queue_index].handle, (void*)&event, 0) == pdPASS)
     {
-        // Recycle event if it came from a pool
-        if (event && event->pool)
+        // Recycle the event. activert_event_pool_free handles pool events and
+        // ACTIVERT_POOL_OVERFLOW_DYNAMIC events (event->pool == NULL) alike, so
+        // dynamic-overflow events are not leaked on flush.
+        if (event != NULL)
         {
             activert_event_pool_free(event);
         }
@@ -144,7 +146,7 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
 
     activert_queue_t* queue = &me->queues[queue_index];
 
-    printf("\nQueue %u:\n", queue_index);
+    printf("\nQueue %u:\n", (unsigned int)queue_index);
 
     // Signal range
     if (queue->signal_count == 0U)
@@ -155,33 +157,33 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
     {
         printf(
             "  Signals:      %u - %u (%u signals)\n",
-            (unsigned)queue->signal_base,
-            (unsigned)(queue->signal_base + queue->signal_count - 1U),
-            (unsigned)queue->signal_count
+            (unsigned int)queue->signal_base,
+            (unsigned int)(queue->signal_base + queue->signal_count - 1U),
+            (unsigned int)queue->signal_count
         );
     }
 
-    printf("  Length:       %zu events\n", queue->queue_length);
+    printf("  Length:       %u events\n", (unsigned int)queue->queue_length);
 
     // Current state
     UBaseType_t current_depth = uxQueueMessagesWaiting(queue->handle);
     UBaseType_t free_space    = uxQueueSpacesAvailable(queue->handle);
 
     printf(
-        "  Current:      %u / %zu (%u%%)\n",
-        current_depth,
-        queue->queue_length,
-        (uint32_t)((current_depth * 100U) / queue->queue_length)
+        "  Current:      %u / %u (%u%%)\n",
+        (unsigned int)current_depth,
+        (unsigned int)queue->queue_length,
+        (unsigned int)((current_depth * 100U) / queue->queue_length)
     );
 
-    printf("  Free:         %u\n", free_space);
+    printf("  Free:      %u\n", (unsigned int)free_space);
 
     // Statistics
     printf(
         "  Posts:        %u (%u OK, %u failed)\n",
-        queue->stats.posts_attempted,
-        queue->stats.posts_succeeded,
-        queue->stats.posts_failed
+        (unsigned int)queue->stats.posts_attempted,
+        (unsigned int)queue->stats.posts_succeeded,
+        (unsigned int)queue->stats.posts_failed
     );
 
     if (queue->stats.posts_attempted > 0U)
@@ -192,10 +194,10 @@ void activert_queue_print_stats(activert_active_t* me, uint8_t queue_index)
     }
 
     printf(
-        "  Peak:         %u / %zu (%u%%)\n",
-        queue->stats.peak_depth,
-        queue->queue_length,
-        (uint32_t)((queue->stats.peak_depth * 100U) / queue->queue_length)
+        "  Peak:         %u / %u (%u%%)\n",
+        (unsigned int)queue->stats.peak_depth,
+        (unsigned int)queue->queue_length,
+        (unsigned int)((queue->stats.peak_depth * 100U) / queue->queue_length)
     );
 }
 

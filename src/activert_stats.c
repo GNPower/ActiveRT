@@ -71,6 +71,16 @@ int activert_stats_register_active(activert_active_t* active)
         return -1;
     }
 
+    // Re-initializing a static AO (re-create on the same storage)
+    // must not add a duplicate entry. If already registered, return success.
+    for (size_t i = 0; i < g_stats_registry.active_count; i++)
+    {
+        if (g_stats_registry.actives[i] == active)
+        {
+            return 0;
+        }
+    }
+
     if (g_stats_registry.active_count >= ACTIVERT_MAX_REGISTERED_ACTIVES)
     {
         printf("ERROR: Active Object registry full\n");
@@ -110,6 +120,15 @@ int activert_stats_register_pool(activert_event_pool_t* pool)
     if (!pool)
     {
         return -1;
+    }
+
+    // Re-initializing a static pool must not add a duplicate entry.
+    for (size_t i = 0; i < g_stats_registry.pool_count; i++)
+    {
+        if (g_stats_registry.pools[i] == pool)
+        {
+            return 0;
+        }
     }
 
     if (g_stats_registry.pool_count >= ACTIVERT_MAX_REGISTERED_POOLS)
@@ -272,7 +291,7 @@ int activert_stats_health_check(activert_health_check_t* result)
                 }
             }
 
-            if (util >= 100U)
+            if (active->queues[q].stats.posts_failed > 0U)
             {
                 result->queue_overflow = true;
                 result->criticals++;
@@ -297,27 +316,35 @@ int activert_stats_health_check(activert_health_check_t* result)
             }
         }
 
-        // Check stack usage
-        UBaseType_t stack_free = uxTaskGetStackHighWaterMark(active->thread);
-        if (stack_free < 128U)
+        // Check stack usage. uxTaskGetStackHighWaterMark returns a count of
+        // StackType_t in words. Convert to and report the thresholds in bytes 
+        // (warning < 512 bytes, critical < 256 bytes). Skip stopped AOs 
+        // (thread == NULL) as FreeRTOS would otherwise treat NULL as 
+        // "the calling task" and report the wrong task's stack.
+        if (active->thread != NULL)
         {
-            result->stack_overflow_risk = true;
-            result->criticals++;
-            result->status = ACTIVERT_HEALTH_CRITICAL;
-        }
-        else if (stack_free < 256U)
-        {
-            result->low_stack = true;
-            result->warnings++;
-            if (result->status < ACTIVERT_HEALTH_WARNING)
+            UBaseType_t stack_free_words = uxTaskGetStackHighWaterMark(active->thread);
+            uint32_t stack_free_bytes = (uint32_t)stack_free_words * (uint32_t)sizeof(StackType_t);
+            if (stack_free_bytes < 256U)
             {
-                result->status = ACTIVERT_HEALTH_WARNING;
+                result->stack_overflow_risk = true;
+                result->criticals++;
+                result->status = ACTIVERT_HEALTH_CRITICAL;
             }
-        }
-        else
-        {
-            // No stack issues
-        }
+            else if (stack_free_bytes < 512U)
+            {
+                result->low_stack = true;
+                result->warnings++;
+                if (result->status < ACTIVERT_HEALTH_WARNING)
+                {
+                    result->status = ACTIVERT_HEALTH_WARNING;
+                }
+            }
+            else
+            {
+                // No stack issues
+            }
+        } /* if (active->thread != NULL) */
     }
 
     // Check all Event Pools
@@ -441,8 +468,8 @@ void activert_stats_print_summary(void)
     printf("ActiveRT System Summary\n");
     printf("================================================================================\n");
 
-    printf("Active Objects:     %zu\n", g_stats_registry.active_count);
-    printf("Event Pools:        %zu\n", g_stats_registry.pool_count);
+    printf("Active Objects:     %u\n", (unsigned int)g_stats_registry.active_count);
+    printf("Event Pools:        %u\n", (unsigned int)g_stats_registry.pool_count);
     printf("Events Processed:   %u\n", activert_stats_get_total_events_processed());
     printf("Events Dropped:     %u\n", activert_stats_get_total_events_dropped());
     printf("Notifications:      %u\n", activert_stats_get_total_notifications());
@@ -510,7 +537,7 @@ void activert_stats_print_all_actives(void)
 {
     printf("\n");
     printf("================================================================================\n");
-    printf("All Active Objects (%zu)\n", g_stats_registry.active_count);
+    printf("All Active Objects (%u)\n", (unsigned int)g_stats_registry.active_count);
     printf("================================================================================\n");
 
     for (size_t i = 0; i < g_stats_registry.active_count; i++)
@@ -524,7 +551,7 @@ void activert_stats_print_all_pools(void)
 {
     printf("\n");
     printf("================================================================================\n");
-    printf("All Event Pools (%zu)\n", g_stats_registry.pool_count);
+    printf("All Event Pools (%u)\n", (unsigned int)g_stats_registry.pool_count);
     printf("================================================================================\n");
 
     for (size_t i = 0; i < g_stats_registry.pool_count; i++)
@@ -552,7 +579,7 @@ void activert_stats_print_full_report(void)
     printf("Total Events:       %u\n", perf.total_events);
     printf("Avg Processing:     %u ticks\n", (unsigned int)perf.avg_processing_time);
     printf("Max Processing:     %u ticks\n", (unsigned int)perf.max_processing_time);
-    printf("Slowest Signal:     %u\n", perf.slowest_signal);
+    printf("Slowest Signal:     %u\n", (unsigned int)perf.slowest_signal);
         #if ACTIVERT_ENABLE_NAMES
     printf("Slowest Task:       %s\n", perf.slowest_task_name ? perf.slowest_task_name : "unknown");
         #endif /* ACTIVERT_ENABLE_NAMES */
@@ -575,7 +602,7 @@ void activert_stats_print_full_report(void)
         printf(
             "Busiest Task:       %s (%u events)\n",
             busiest->name ? busiest->name : "unnamed",
-            busiest->stats.events_processed
+            (unsigned int)busiest->stats.events_processed
         );
     }
         #endif /* ACTIVERT_ENABLE_NAMES */
@@ -701,18 +728,20 @@ int activert_stats_export(uint8_t* buffer, size_t buffer_size)
 
     size_t offset = 0U;
 
-    /* cppcheck-suppress misra-c2012-11.3
-     * Deviation: uint8_t* buffer cast to uint32_t* for direct serialisation of
-     * 32-bit fields. The caller-supplied buffer is documented to require 4-byte
-     * alignment; the cast is safe and avoids per-field memcpy overhead. */
-    // Write header
-    *(uint32_t*)&buffer[offset] = g_stats_registry.active_count;
-    offset += sizeof(uint32_t);
+    // Write header via memcpy (no misaligned store so it works for any buffer
+    // alignment). The counts are bounded by ACTIVERT_MAX_REGISTERED_ACTIVES/POOLS.
+    uint32_t active_count32 = (g_stats_registry.active_count > UINT32_MAX)
+                                  ? UINT32_MAX
+                                  : (uint32_t)g_stats_registry.active_count;
+    uint32_t pool_count32   = (g_stats_registry.pool_count > UINT32_MAX)
+                                  ? UINT32_MAX
+                                  : (uint32_t)g_stats_registry.pool_count;
 
-    /* cppcheck-suppress misra-c2012-11.3
-     * Deviation: see above. */
-    *(uint32_t*)&buffer[offset] = g_stats_registry.pool_count;
-    offset += sizeof(uint32_t);
+    memcpy(&buffer[offset], &active_count32, sizeof(active_count32));
+    offset += sizeof(active_count32);
+
+    memcpy(&buffer[offset], &pool_count32, sizeof(pool_count32));
+    offset += sizeof(pool_count32);
 
     // Write Active Object stats
     for (size_t i = 0U; i < g_stats_registry.active_count; i++)

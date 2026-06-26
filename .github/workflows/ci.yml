@@ -39,3 +39,29 @@ jobs:
         with:
           name: test-results
           path: build/host-test/Testing/
+
+  build-and-test-windows:
+    name: Build & Test (windows-latest)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Full history for `git describe` version detection
+
+      - name: Configure (windows-test preset)
+        run: cmake --preset windows-test
+
+      - name: Build
+        run: cmake --build --preset windows-test
+
+      - name: Run tests
+        run: ctest --preset windows-test
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: build/windows-test/Testing/

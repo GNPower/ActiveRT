@@ -36,7 +36,7 @@
  * Create an event pool with caller-provided event memory
  *
  * The event storage array is provided by the caller (typically a static array).
- * The pool control struct, bitmap, and mutex are heap-allocated via ACTIVERT_MALLOC.
+ * The pool control struct and bitmap are heap-allocated via ACTIVERT_MALLOC.
  * For fully static (zero-heap) pools, use activert_event_pool_init_static() or
  * the ACTIVERT_EVENT_POOL_DEFINE / ACTIVERT_EVENT_POOL_INIT macro pair instead.
  *
@@ -67,8 +67,8 @@ activert_event_pool_t* activert_event_pool_create(
  *
  * Unlike activert_event_pool_create(), this function uses NO dynamic
  * allocation. The pool struct, event memory, and bitmap are all provided by
- * the caller as pre-allocated static storage. The mutex is created using the
- * StaticSemaphore_t buffer embedded in the pool struct.
+ * the caller as pre-allocated static storage. Thread-safety is provided by
+ * interrupt-masking critical sections.
  *
  * This is the function used by the ACTIVERT_EVENT_POOL_INIT macro, which
  * pairs with ACTIVERT_EVENT_POOL_DEFINE to provide fully static event pools
@@ -96,7 +96,7 @@ void activert_event_pool_init_static(
  * Create a dynamic event pool
  * 
  * Creates an event pool using malloc. Can be destroyed with activert_event_pool_destroy().
- * Thread-safe (uses FreeRTOS mutex).
+ * Thread-safe (task and ISR contexts mutually excluded via critical sections).
  * 
  * @param name          Pool name (for debugging, can be NULL if names disabled)
  * @param event_size    Size of each event in bytes (must be >= sizeof(activert_event_t))
@@ -137,9 +137,10 @@ void activert_event_pool_destroy(activert_event_pool_t* pool);
 
 /**
  * Allocate an event from a pool
- * 
- * Thread-safe. Blocks if pool is empty (unless policy is DROP).
- * Automatically sets event->pool pointer for tracking.
+ *
+ * Thread-safe and non-blocking. When the pool is exhausted the overflow policy
+ * applies: DROP returns NULL, ASSERT traps, DYNAMIC falls back to a heap
+ * allocation. Automatically sets event->pool pointer for tracking.
  * 
  * @param pool          Pool to allocate from
  * @return              Pointer to event, or NULL if pool exhausted

@@ -135,8 +135,7 @@ From an ISR:
 void my_isr_handler(void)
 {
     BaseType_t woken  = pdFALSE;
-    my_event_t *evt   = (my_event_t *)activert_event_pool_alloc_from_isr(
-                            my_pool, &woken);
+    my_event_t *evt   = (my_event_t *)activert_event_pool_alloc_from_isr(my_pool);
     if (evt != NULL) {
         evt->base.sig = DATA_SIG;
         evt->value    = read_peripheral();

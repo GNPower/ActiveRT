@@ -37,9 +37,11 @@ void activert_active_notify(activert_active_t* me, uint32_t notify_bits)
     // - Else (notification-only task): use xTaskNotify directly
     if (me->notification.semaphore != NULL)
     {
-        // Accumulate notification bits (OR them together) - use critical section for thread safety
+        // Accumulate notification bits (OR them together), use critical section for thread safety.
+        // 'pending' marks that a notification occurred even when notify_bits is 0.
         ACTIVERT_ENTER_CRITICAL();
         me->notification.pending_value |= notify_bits;
+        me->notification.pending = true;
         ACTIVERT_EXIT_CRITICAL();
 
         // Give semaphore to wake up task
@@ -74,9 +76,11 @@ void activert_active_notify_from_isr(
     // - Else (notification-only task): use xTaskNotifyFromISR directly
     if (me->notification.semaphore != NULL)
     {
-        // Accumulate notification bits (OR them together) - use ISR-safe critical section
+        // Accumulate notification bits (OR them together), use ISR-safe critical section.
+        // 'pending' marks that a notification occurred even when notify_bits is 0.
         UBaseType_t ux_saved_interrupt_status = taskENTER_CRITICAL_FROM_ISR();
         me->notification.pending_value |= notify_bits;
+        me->notification.pending = true;
         taskEXIT_CRITICAL_FROM_ISR(ux_saved_interrupt_status);
 
         // Give semaphore to wake up task

@@ -109,10 +109,10 @@ struct activert_event_pool
     uint8_t* usage_bitmap;                  /**< Allocation bitmap */
     size_t event_size;                      /**< Size of each event */
     size_t pool_size;                       /**< Number of events in pool */
-    size_t bitmap_size;                     /**< Bitmap size in uint32_t */
+    size_t bitmap_size;                     /**< Bitmap size in bytes */
     activert_pool_overflow_policy_t policy; /**< Overflow policy */
-    SemaphoreHandle_t mutex;                /**< Thread safety mutex */
-    StaticSemaphore_t mutex_buffer;         /**< Mutex static storage */
+    /* Thread-safety: task-context and ISR-context pool operations are mutually
+     * excluded by an interrupt-masking critical section */
 #if ACTIVERT_ENABLE_STATS
     activert_event_pool_stats_t stats; /**< Statistics */
 #endif
@@ -156,6 +156,8 @@ typedef struct
     SemaphoreHandle_t semaphore;     /**< Semaphore for queue set integration (NULL if not used) */
     StaticSemaphore_t* semaphore_cb; /**< Static semaphore storage (NULL if dynamic) */
     uint32_t pending_value;          /**< Pending notification bits */
+    bool pending;                    /**< A notification is pending (distinguishes a real
+                                          notify with value 0 from a leftover queue-set token) */
 } activert_notification_t;
 
 /*******************************************************************************

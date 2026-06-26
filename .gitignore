@@ -128,8 +128,11 @@ Icon
 *.plist
 compile_commands.json.bak
 
-# ---- MISRA-C rules (copyrighted — decoded from MISRA_RULES_B64 secret at runtime) ----
+# ---- MISRA-C rules (copyrighted, so decoded from MISRA_RULES_B64 secret at runtime) ----
 tools/misra/misra_rules.txt
+
+# ---- Bighunt folder ----
+.bughunt
 
 # ---- act local secrets file ----
 .secrets

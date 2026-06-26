@@ -41,12 +41,24 @@
         {
             "name": "windows-lib",
             "displayName": "Windows Library Build (no tests)",
-            "description": "Builds the static library on Windows using Visual Studio. Tests are Linux-only (run in CI).",
+            "description": "Builds the static library on Windows using Visual Studio. Requires FreeRTOS headers on the include path (BYO FreeRTOS).",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/build/windows-lib",
             "cacheVariables": {
                 "ACTIVERT_BUILD_TESTS": "OFF",
                 "ACTIVERT_BUILD_DOCS":  "OFF"
+            }
+        },
+        {
+            "name": "windows-test",
+            "displayName": "Windows Build with Tests (Debug)",
+            "description": "Builds and runs the unit tests using the FreeRTOS Windows simulator (MSVC_MINGW port) on Windows.",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/windows-test",
+            "cacheVariables": {
+                "ACTIVERT_BUILD_TESTS":          "ON",
+                "ACTIVERT_BUILD_DOCS":           "OFF",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         }
     ],
@@ -68,12 +80,30 @@
             "name": "windows-lib",
             "configurePreset": "windows-lib",
             "configuration": "Release"
+        },
+        {
+            "name": "windows-test",
+            "configurePreset": "windows-test",
+            "configuration": "Debug"
         }
     ],
     "testPresets": [
         {
             "name": "host-test",
             "configurePreset": "host-test",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        },
+        {
+            "name": "windows-test",
+            "configurePreset": "windows-test",
+            "configuration": "Debug",
             "output": {
                 "outputOnFailure": true,
                 "verbosity": "verbose"

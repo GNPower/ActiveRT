@@ -15,7 +15,7 @@
 *   0.4.0   gnp     2025-12-13  Multi-queue support with QueueSet routing
 *   0.5.0   gnp     2025-12-27  Statistics integration and per-queue tracking
 *   0.7.0   gnp     2026-01-24  Task notification support (semaphore and xTaskNotify)
-*   1.0.0   gnp     2026-02-28  Loop task variant; ACTIVERT_MALLOC/ENTER_CRITICAL macros
+*   1.0.0   gnp     2026-02-28  Loop task variant, ACTIVERT_MALLOC/ENTER_CRITICAL macros
 *
 *******************************************************************************/
 
@@ -68,7 +68,7 @@ static void activert_active_event_loop(void* pvParameters)
     while (1)
     {
         /*************************************************************
-        * LEVEL 1: Task Notifications (if enabled)
+        * Task Notifications (if enabled)
         *************************************************************/
         if (me->notification.handler != NULL)
         {
@@ -90,27 +90,27 @@ static void activert_active_event_loop(void* pvParameters)
         }
 
         /*************************************************************
-        * LEVEL 2: Queue Events (fair scheduling)
+        * Queue Events (fair scheduling)
         *************************************************************/
 
-        // If notification-only task (no dispatch), just wait for notifications
-        if (me->dispatch == NULL)
+        // Queue-less task (notification-only): block on notifications regardless
+        // of whether a dispatch handler is set. A dispatch handler on a queue-less
+        // AO only receives the startup INIT_SIG and there is no queue to receive from,
+        // so falling through to the queue-receive path below would dereference the
+        // NULL me->queues. A queue-less AO MUST have a notification handler.
+        if (me->queue_count == 0U)
         {
-            if (me->notification.handler != NULL)
-            {
-                uint32_t notify_bits;
-                xTaskNotifyWait(0U, 0xFFFFFFFFU, &notify_bits, portMAX_DELAY);
+            ACTIVERT_ASSERT(me->notification.handler != NULL);
+
+            uint32_t notify_bits;
+            xTaskNotifyWait(0U, 0xFFFFFFFFU, &notify_bits, portMAX_DELAY);
 
 #if ACTIVERT_ENABLE_STATS
-                me->stats.notifications_received++;
+            me->stats.notifications_received++;
 #endif /* ACTIVERT_ENABLE_STATS */
 
-                me->notification.handler(me, notify_bits);
-                continue;
-            }
-
-            // No dispatch and no notification handler - error!
-            ACTIVERT_ASSERT(0);
+            me->notification.handler(me, notify_bits);
+            continue;
         }
 
         QueueSetMemberHandle_t active_queue;
@@ -143,14 +143,19 @@ static void activert_active_event_loop(void* pvParameters)
                 // Take semaphore (clear it)
                 xSemaphoreTake(me->notification.semaphore, 0);
 
-                // Get pending notification value - use critical section for thread safety
+                // Get pending notification value (use critical section for thread safety).
+                // 'was_pending' is cleared here so a leftover queue-set token (more
+                // tokens than handler dispatches) does not invoke the handler, while a
+                // real notify with value 0 still does.
                 ACTIVERT_ENTER_CRITICAL();
                 uint32_t notify_value          = me->notification.pending_value;
+                bool was_pending               = me->notification.pending;
                 me->notification.pending_value = 0;  // Clear pending value
+                me->notification.pending       = false;
                 ACTIVERT_EXIT_CRITICAL();
 
-                // Call notification handler
-                if ((me->notification.handler != NULL) && (notify_value != 0U))
+                // Call notification handler (also for a value of 0, when pending)
+                if ((me->notification.handler != NULL) && was_pending)
                 {
                     me->notification.handler(me, notify_value);
 
@@ -211,11 +216,10 @@ static void activert_active_event_loop(void* pvParameters)
     #endif /* ACTIVERT_ENABLE_TIMING_STATS */
 #endif     /* ACTIVERT_ENABLE_STATS */
 
-        // Auto-recycle event if it came from a pool
-        if (event->pool != NULL)
-        {
-            activert_event_pool_free(event);
-        }
+        // Auto-recycle the dispatched event. activert_event_pool_free handles
+        // both pool events (returned to the pool) and ACTIVERT_POOL_OVERFLOW_DYNAMIC
+        // events (event->pool == NULL, freed with vPortFree).
+        activert_event_pool_free(event);
     }
 }
 
@@ -780,6 +784,17 @@ activert_active_t* activert_active_create_dynamic(
     me->queue_count = num_queues;
     me->is_static   = false;
 
+    // Allocate the queue array (the static path receives it from the caller.
+    // The dynamic path must allocate it before writing through me->queues[i]).
+    me->queues =
+        (activert_queue_t*)ACTIVERT_MALLOC((size_t)num_queues * sizeof(activert_queue_t));
+    if (me->queues == NULL)
+    {
+        ACTIVERT_FREE(me);
+        return NULL;
+    }
+    memset(me->queues, 0, (size_t)num_queues * sizeof(activert_queue_t));
+
     // Create queues
     for (uint8_t i = 0; i < num_queues; i++)
     {
@@ -790,6 +805,7 @@ activert_active_t* activert_active_create_dynamic(
             {
                 vQueueDelete(me->queues[j].handle);
             }
+            ACTIVERT_FREE(me->queues);
             ACTIVERT_FREE(me);
             return NULL;
         }
@@ -811,6 +827,7 @@ activert_active_t* activert_active_create_dynamic(
             {
                 vQueueDelete(me->queues[i].handle);
             }
+            ACTIVERT_FREE(me->queues);
             ACTIVERT_FREE(me);
             return NULL;
         }
@@ -843,6 +860,7 @@ activert_active_t* activert_active_create_dynamic(
         {
             vQueueDelete(me->queues[i].handle);
         }
+        ACTIVERT_FREE(me->queues);
         ACTIVERT_FREE(me);
         return NULL;
     }
@@ -953,6 +971,12 @@ void activert_active_destroy(activert_active_t* me)
         ACTIVERT_FREE(me->queues);
     }
 
+    // Remove from the global stats registry before freeing, otherwise the
+    // registry retains a dangling pointer (use-after-free on the next walk).
+    #if ACTIVERT_ENABLE_STATS
+    activert_stats_unregister_active(me);
+    #endif /* ACTIVERT_ENABLE_STATS */
+
     // Free structure
     ACTIVERT_FREE(me);
 }
@@ -1054,26 +1078,26 @@ void activert_active_print_stats(activert_active_t* me)
     printf("Active Object\n");
     #endif /* ACTIVERT_ENABLE_NAMES */
     printf("================================================================\n");
-    printf("Priority:       %u\n", me->priority);
-    printf("Queue count:    %u\n", me->queue_count);
+    printf("Priority:        %u\n", (unsigned int)me->priority);
+    printf("Queue count:     %u\n", (unsigned int)me->queue_count);
 
     uint32_t free_stack = activert_active_get_stack_high_water(me);
-    printf("Stack free:     %u bytes\n", free_stack);
+    printf("Stack free:      %u bytes\n", (unsigned int)free_stack);
 
     printf("\nEvent Statistics:\n");
-    printf("  Processed:    %u\n", me->stats.events_processed);
-    printf("  Dropped:      %u\n", me->stats.events_dropped);
-    printf("  Notifications: %u\n", me->stats.notifications_received);
+    printf("  Processed:     %u\n", (unsigned int)me->stats.events_processed);
+    printf("  Dropped:       %u\n", (unsigned int)me->stats.events_dropped);
+    printf("  Notifications: %u\n", (unsigned int)me->stats.notifications_received);
 
     #if ACTIVERT_ENABLE_TIMING_STATS
     if (me->stats.events_processed > 0U)
     {
         TickType_t avg_time = me->stats.total_processing_time / me->stats.events_processed;
-        printf("  Avg time:     %u ticks\n", (uint32_t)avg_time);
+        printf("  Avg time:  %u ticks\n", (unsigned int)avg_time);
         printf(
             "  Max time:     %u ticks (sig %u)\n",
-            (uint32_t)me->stats.max_processing_time,
-            me->stats.slowest_signal
+            (unsigned int)me->stats.max_processing_time,
+            (unsigned int)me->stats.slowest_signal
         );
     }
     #endif /* ACTIVERT_ENABLE_TIMING_STATS */
@@ -1081,24 +1105,24 @@ void activert_active_print_stats(activert_active_t* me)
     // Print queue stats
     for (uint8_t i = 0; i < me->queue_count; i++)
     {
-        printf("\nQueue %u:\n", i);
-        printf("  Length:       %zu\n", me->queues[i].queue_length);
+        printf("\nQueue %u:\n", (unsigned int)i);
+        printf("  Length:    %u\n", (unsigned int)me->queues[i].queue_length);
         printf(
             "  Posts:        %u (%u OK, %u failed)\n",
-            me->queues[i].stats.posts_attempted,
-            me->queues[i].stats.posts_succeeded,
-            me->queues[i].stats.posts_failed
+            (unsigned int)me->queues[i].stats.posts_attempted,
+            (unsigned int)me->queues[i].stats.posts_succeeded,
+            (unsigned int)me->queues[i].stats.posts_failed
         );
         printf(
-            "  Depth:        %u / %zu (current / max)\n",
-            me->queues[i].stats.current_depth,
-            me->queues[i].queue_length
+            "  Depth:        %u / %u (current / max)\n",
+            (unsigned int)me->queues[i].stats.current_depth,
+            (unsigned int)me->queues[i].queue_length
         );
         printf(
-            "  Peak:         %u / %zu (%u%%)\n",
-            me->queues[i].stats.peak_depth,
-            me->queues[i].queue_length,
-            (uint32_t)((me->queues[i].stats.peak_depth * 100U) / me->queues[i].queue_length)
+            "  Peak:         %u / %u (%u%%)\n",
+            (unsigned int)me->queues[i].stats.peak_depth,
+            (unsigned int)me->queues[i].queue_length,
+            (unsigned int)((me->queues[i].stats.peak_depth * 100U) / me->queues[i].queue_length)
         );
     }
 
