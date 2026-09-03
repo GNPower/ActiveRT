@@ -146,3 +146,16 @@ Deviations fall into two categories:
 | **Scope** | `src/activert_cli.c` - `find_active()` and `find_pool()` |
 | **Category** | Advisory |
 | **Rationale** | `strtoul` is classified as an errno-setting function; MISRA requires `errno` to be zeroed before the call (22.8) and tested for zero after (22.9). In both call sites validity is fully determined by `*endptr == '\0'`, which is the standard embedded pattern for checking whether the entire input string was consumed as a number. Introducing `errno = 0` / `errno != 0` checks would require `<errno.h>` on a bare-metal target and adds no safety benefit since the `endptr` test already distinguishes a valid parse from an invalid CLI argument. `strtoul` is the only errno-setting function used anywhere in ActiveRT; the global suppression covers no other call sites. |
+
+
+---
+
+## Non-MISRA cppcheck Suppressions
+
+### `autoVariables` - address of a local assigned to a longer-lived object
+
+| Field | Detail |
+| --- | --- |
+| **Locations** | `src/activert_post.c` - `post_wait_common()`, at `event->completion = &completion` |
+| **Severity** | error (always enabled, independent of `--enable`) |
+| **Rationale** | `activert_active_post_wait()` builds its completion block on the calling task's stack and attaches it to an event that outlives the statement, which is exactly the pattern this check exists to catch. It is safe here because the function cannot return while the pointer is still reachable. The Active Object only leaves the `PENDING` state inside `activert_completion_claim()`, and it claims strictly before dispatching, which is always before the event is freed. So a poster that reads `PENDING` inside a critical section has proven the event is still queued and can detach by clearing `event->completion` in that same critical section. A poster that reads any other state blocks until the release signals it. Removing the suppression would mean moving the completion block to a library-owned static pool, adding fixed RAM and an exhaustion failure mode. The invariants are documented in `src/activert_internal.h`. |

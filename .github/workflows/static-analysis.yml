@@ -42,6 +42,15 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y cppcheck
 
+      # Keep this tag matching test/CMakeLists.txt and
+      # tools/misra/run_misra_check.py.
+      - name: Fetch FreeRTOS kernel headers
+        run: |
+          git clone --depth=1 --branch V11.2.0 \
+            https://github.com/FreeRTOS/FreeRTOS-Kernel.git build/freertos-kernel
+
+      # Do NOT add --suppress=preprocessorErrorDirective here, or cppcheck will 
+      # ignore any #error in activert_config.h
       - name: Run cppcheck
         run: |
           cppcheck \
@@ -51,14 +60,15 @@ jobs:
             --inline-suppr \
             --suppress=missingInclude \
             --suppress=missingIncludeSystem \
-            --suppress=preprocessorErrorDirective \
             --suppress=constParameter \
             --suppress=constParameterPointer \
             --suppress=constVariablePointer \
             --suppress=knownConditionTrueFalse \
             --suppress=normalCheckLevelMaxBranches \
-            -D tskKERNEL_VERSION_MAJOR=11 \
             -I include/ \
+            -I build/freertos-kernel/include \
+            -I test/posix_config \
+            -I test/platform_stubs \
             src/
 
   # -------------------------------------------------------------------------

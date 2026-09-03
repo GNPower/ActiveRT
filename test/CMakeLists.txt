@@ -171,6 +171,20 @@ add_activert_test(test_active_basic
 add_activert_test(test_stats_registry
     "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_stats_registry.c")
 
+# Enable/disable Active Objects.
+add_activert_test(test_enable_disable
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_enable_disable.c")
+
+# Synchronous posting.
+add_activert_test(test_post_wait
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_post_wait.c"
+    ACTIVERT_ENABLE_POST_WAIT=1)
+
+# The pool suite again with the synchronous-post field removed.
+add_activert_test(test_event_pool_no_post_wait
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_event_pool.c"
+    ACTIVERT_ENABLE_POST_WAIT=0)
+
 ################################################################################
 # Regression tests
 ################################################################################

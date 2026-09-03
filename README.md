@@ -28,6 +28,8 @@ Detailed documentation can be found at [ReadTheDocs](https://activert.readthedoc
 | **Statistics** | Per-component counters, peak usage, processing time, health checks |
 | **CLI layer** | Runtime diagnostics via any embedded CLI system |
 | **ISR-safe APIs** | `_from_isr` variants for all post/free/notify operations |
+| **Enable / disable** | Take an Active Object out of service without destroying it |
+| **Synchronous posting** | `activert_active_post_wait` blocks the caller until the handler returns |
 | **FreeRTOS 11** | Compatible with FreeRTOS 11.2+ |
 
 ---
@@ -176,6 +178,7 @@ Key options in `include/activert_config.h`:
 | `ACTIVERT_ENABLE_TIMING_STATS` | `1` | Per-event processing time tracking |
 | `ACTIVERT_ENABLE_NAMES` | `1` | Named AOs and pools for debugging |
 | `ACTIVERT_ENABLE_DEBUG` | `0` | Verbose debug printf output |
+| `ACTIVERT_ENABLE_POST_WAIT` | `1` | Synchronous `activert_active_post_wait` |
 | `ACTIVERT_ENABLE_CLI` | `0` | CLI command layer (requires `ACTIVERT_CLI_GET_TOKEN` override) |
 | `ACTIVERT_MAX_QUEUES` | `8` | Max queues per Active Object |
 | `ACTIVERT_MAX_REGISTERED_ACTIVES` | `32` | Global AO registry capacity |

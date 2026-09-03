@@ -48,6 +48,7 @@ automatically.
 | `ACTIVERT_ENABLE_NAMES` | `1` | String names for Active Objects and Event Pools. Disable to save memory. |
 | `ACTIVERT_ENABLE_DEBUG` | `0` | Verbose debug output via `ACTIVERT_PRINTF`. **Disable for production builds.** |
 | `ACTIVERT_ENABLE_DYNAMIC_ALLOCATION` | `0` | Enables `activert_active_create` / `activert_active_destroy`. Off by default. Embedded targets should prefer static allocation. |
+| `ACTIVERT_ENABLE_POST_WAIT` | `1` | Enables `activert_active_post_wait`. Adds one pointer to every `activert_event_t`. Requires `INCLUDE_xTaskGetSchedulerState` and `INCLUDE_xTaskGetCurrentTaskHandle` in `FreeRTOSConfig.h`. See [Synchronous Posting](../fundamentals/synchronous_posting). |
 | `ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION` | `0` | Prints a warning via `ACTIVERT_PRINTF` when an event pool is exhausted. Useful during development. |
 | `ACTIVERT_ENABLE_CLI` | `0` | Enables the CLI command layer (`activert_cli_cmd_*` functions). When set to `1`, `ACTIVERT_CLI_GET_TOKEN` **must** also be defined. See [CLI Setup](../cli/setup). |
 

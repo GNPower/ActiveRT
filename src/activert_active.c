@@ -5,7 +5,7 @@
 *   @brief      Active Object Implementation
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    1.0.0
+*   @version    1.2.0
 *
 *   Revision History:
 *
@@ -16,11 +16,13 @@
 *   0.5.0   gnp     2025-12-27  Statistics integration and per-queue tracking
 *   0.7.0   gnp     2026-01-24  Task notification support (semaphore and xTaskNotify)
 *   1.0.0   gnp     2026-02-28  Loop task variant, ACTIVERT_MALLOC/ENTER_CRITICAL macros
+*   1.2.0   gnp     2026-08-30  set_enabled/is_enabled, post_wait synchronous posting
 *
 *******************************************************************************/
 
 #include "activert_active.h"
 #include "activert_event.h"
+#include "activert_internal.h"
 #include "activert_stats.h"
 #include <string.h>
 #include <stdio.h>
@@ -194,6 +196,28 @@ static void activert_active_event_loop(void* pvParameters)
             continue;
         }
 
+#if ACTIVERT_ENABLE_POST_WAIT
+        activert_completion_t* completion = activert_completion_claim(event);
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
+
+        // A disabled Active Object consumes and discards events instead of
+        // dispatching them. New posts are already rejected by the post
+        // functions, so this only drains what was queued before the AO was
+        // disabled, and it fixes a race condition where a post is accepted
+        // right before the flag is cleared.
+        if (!me->enabled)
+        {
+#if ACTIVERT_ENABLE_STATS
+            me->stats.events_dropped++;
+#endif /* ACTIVERT_ENABLE_STATS */
+
+            activert_event_pool_free(event);
+#if ACTIVERT_ENABLE_POST_WAIT
+            activert_completion_release(completion, false);
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
+            continue;
+        }
+
 #if ACTIVERT_ENABLE_TIMING_STATS
         TickType_t start_time = xTaskGetTickCount();
 #endif /* ACTIVERT_ENABLE_TIMING_STATS */
@@ -220,6 +244,10 @@ static void activert_active_event_loop(void* pvParameters)
         // both pool events (returned to the pool) and ACTIVERT_POOL_OVERFLOW_DYNAMIC
         // events (event->pool == NULL, freed with vPortFree).
         activert_event_pool_free(event);
+
+#if ACTIVERT_ENABLE_POST_WAIT
+        activert_completion_release(completion, true);
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
     }
 }
 
@@ -344,6 +372,7 @@ static activert_active_t* activert_active_create_static_internal(
     me->dispatch                     = dispatch;
     me->priority                     = priority;
     me->queue_count                  = num_queues;
+    me->enabled                      = true;
     me->is_static                    = true;
     me->static_mem.thread_cb         = task_cb;
     me->static_mem.queue_cbs         = queue_cbs;
@@ -581,6 +610,7 @@ activert_active_t* activert_active_create_with_notification_static(
         me->dispatch             = dispatch;  // Can be NULL for notification-only
         me->priority             = priority;
         me->queue_count          = 0;
+        me->enabled              = true;
         me->is_static            = true;
         me->static_mem.thread_cb = task_cb;
         me->notification.handler = notification_handler;
@@ -709,6 +739,7 @@ activert_active_t* activert_active_create_loop_static(
     me->priority             = priority;
     me->queue_count          = 0;
     me->queues               = NULL;
+    me->enabled              = true;
     me->is_static            = true;
     me->static_mem.thread_cb = task_cb;
 
@@ -782,6 +813,7 @@ activert_active_t* activert_active_create_dynamic(
     me->dispatch    = dispatch;
     me->priority    = priority;
     me->queue_count = num_queues;
+    me->enabled     = true;
     me->is_static   = false;
 
     // Allocate the queue array (the static path receives it from the caller.
@@ -902,6 +934,7 @@ activert_active_t* activert_active_create_with_notification_dynamic(
         me->dispatch             = dispatch;
         me->priority             = priority;
         me->queue_count          = 0;
+        me->enabled              = true;
         me->is_static            = false;
         me->notification.handler = notification_handler;
 
@@ -1003,6 +1036,38 @@ void activert_active_stop(activert_active_t* me)
         vTaskDelete(me->thread);
         me->thread = NULL;
     }
+}
+
+int activert_active_set_enabled(activert_active_t* me, bool enabled)
+{
+    ACTIVERT_ASSERT(me != NULL);
+
+    // Loop tasks and notification-only Active Objects have no queue-event
+    // dispatch to disable, so enable/disabvle is not supported for them.
+    if (me->queue_count == 0U)
+    {
+        return -1;
+    }
+
+    me->enabled = enabled;
+
+#if ACTIVERT_ENABLE_DEBUG
+    #if ACTIVERT_ENABLE_NAMES
+    printf(
+        "activert_active_set_enabled: Task '%s' is now %s\n",
+        me->name ? me->name : "unnamed",
+        enabled ? "enabled" : "disabled"
+    );
+    #endif /* ACTIVERT_ENABLE_NAMES */
+#endif     /* ACTIVERT_ENABLE_DEBUG */
+
+    return 0;
+}
+
+bool activert_active_is_enabled(activert_active_t* me)
+{
+    ACTIVERT_ASSERT(me != NULL);
+    return me->enabled;
 }
 
 TaskHandle_t activert_active_get_task_handle(activert_active_t* me)

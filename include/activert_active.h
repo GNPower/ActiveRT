@@ -5,7 +5,7 @@
 *   @brief      Active Object API
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    1.0.0
+*   @version    1.2.0
 *
 *   Revision History:
 *
@@ -15,6 +15,7 @@
 *   0.4.0   gnp     2025-12-13  Multi-queue create, ACTIVERT_ACTIVE_DEFINE_SIMPLE updated
 *   0.7.0   gnp     2026-01-24  Notification create variants, notify/notify_from_isr
 *   1.0.0   gnp     2026-02-28  Loop task API, ACTIVERT_ACTIVE_DEFINE_LOOP macro
+*   1.2.0   gnp     2026-08-30  set_enabled/is_enabled, post_wait synchronous posting
 *
 *******************************************************************************/
 
@@ -282,6 +283,45 @@ void activert_active_destroy(activert_active_t* me);
 void activert_active_stop(activert_active_t* me);
 
 /**
+ * Enable or disable event dispatch for an Active Object
+ *
+ * A disabled Active Object accepts nothing and dispatches nothing while its
+ * task, queues, and statistics stay active. Posting to it fails with -1 so the
+ * caller keeps ownership of the event, exactly as for a full queue. An event
+ * that was already queued when the Active Object is disabled is dequeued and freed
+ * without being dispatched and counts as a dropped event.
+ *
+ * A disabled Active Object costs no CPU: nothing is posted to it, so its task
+ * stays blocked on its queue.
+ *
+ * The disable covers queue events only. Notification handlers still run, and the
+ * ACTIVERT_INIT_SIG and ACTIVERT_TERM_SIG events are dispatched directly rather
+ * than through a queue, so neither are affected.
+ *
+ * Active Objects start enabled. Task context only.
+ *
+ * @param me            Active Object
+ * @param enabled       true to dispatch events, false to reject and discard them
+ * @return              0 on success, -1 if the Active Object has no event
+ *                      dispatch to disable (a loop task or a notification-only
+ *                      Active Object), in which case the state is unchanged
+ *
+ * Example:
+ *   activert_active_set_enabled(sensor_task, false);
+ *   // ... firmware update ...
+ *   activert_active_set_enabled(sensor_task, true);
+ */
+int activert_active_set_enabled(activert_active_t* me, bool enabled);
+
+/**
+ * Check whether an Active Object is dispatching events
+ *
+ * @param me            Active Object
+ * @return              true if event dispatch is enabled
+ */
+bool activert_active_is_enabled(activert_active_t* me);
+
+/**
  * Get FreeRTOS task handle
  * 
  * @param me            Active Object
@@ -397,6 +437,94 @@ int activert_active_post_to_queue_from_isr(
     activert_event_t* event,
     BaseType_t* pxHigherPriorityTaskWoken
 );
+
+/*******************************************************************************
+* Synchronous Event Posting
+*
+* activert_active_post_wait() posts an event and blocks the calling task until
+* the target Active Object's dispatch handler has returned for that event. It
+* reports only that dispatch ran, not whether the handler succeeded.
+*
+* There is deliberately no ISR variant as an ISR cannot block.
+*******************************************************************************/
+
+#if ACTIVERT_ENABLE_POST_WAIT
+
+    /** Dispatch ran and returned. The Active Object freed the event. */
+    #define ACTIVERT_POST_WAIT_OK 0
+
+    /** Post failed. The caller still owns the event and must free or retry it. */
+    #define ACTIVERT_POST_WAIT_FAILED (-1)
+
+    /** Timed out before dispatch began. The Active Object owns it, do NOT free it. */
+    #define ACTIVERT_POST_WAIT_TIMEOUT (-2)
+
+    /** Consumed without dispatch because the Active Object was disabled, then freed. */
+    #define ACTIVERT_POST_WAIT_DROPPED (-3)
+
+/**
+ * Post an event and wait for its dispatch handler to return
+ *
+ * Routes the event by signal exactly as activert_active_post() does, then
+ * blocks on a binary semaphore until the target Active Object has finished
+ * with the event. The calling task is remains blocked.
+ *
+ * The timeout bounds the wait for dispatch to START. Once the Active Object
+ * has taken the event, this function waits for the handler to return however
+ * long that takes, because abandoning the wait at that point would leave the
+ * Active Object signalling a completion block that no longer exists.
+ *
+ * Event ownership by return code:
+ *
+ *   ACTIVERT_POST_WAIT_OK       Active Object owns it, dispatched and freed
+ *   ACTIVERT_POST_WAIT_DROPPED  Active Object owns it, freed without dispatch
+ *   ACTIVERT_POST_WAIT_FAILED   caller owns it, free it or retry
+ *   ACTIVERT_POST_WAIT_TIMEOUT  Active Object owns it, still queued, do NOT free
+ *
+ * Uses roughly sizeof(StaticSemaphore_t) bytes of the calling task's stack for
+ * the duration of the call. No heap allocation.
+ *
+ * Task context only. Fails when the scheduler is not running, when called from 
+ * the target's own task, when the Active Object is disabled, and when it has no 
+ * queues. Two Active Objects that post_wait on each other will deadlock until 
+ * their timeouts expire.
+ *
+ * @param me            Target Active Object
+ * @param event         Event to post (must not be NULL)
+ * @param timeout       Ticks to wait for dispatch to begin (portMAX_DELAY to wait forever)
+ * @return              One of the ACTIVERT_POST_WAIT_* codes above
+ *
+ * Example:
+ *   cfg_event_t* evt = (cfg_event_t*)activert_event_pool_alloc(cfg_pool);
+ *   if (evt != NULL) {
+ *       evt->base.sig = CFG_APPLY_SIG;
+ *       evt->baud     = 115200;
+ *
+ *       int rc = activert_active_post_wait(radio_task, &evt->base, pdMS_TO_TICKS(100));
+ *       if (rc == ACTIVERT_POST_WAIT_FAILED) {
+ *           activert_event_pool_free(&evt->base);  // only this code frees
+ *       }
+ *       // rc == ACTIVERT_POST_WAIT_OK: the handler has returned, safe to continue
+ *   }
+ */
+int activert_active_post_wait(activert_active_t* me, activert_event_t* event, TickType_t timeout);
+
+/**
+ * Post an event to a specific queue and wait for its dispatch handler to return
+ *
+ * Bypasses signal routing, otherwise identical to activert_active_post_wait().
+ *
+ * @param me            Target Active Object
+ * @param queue_index   Queue index (0 to num_queues-1)
+ * @param event         Event to post (must not be NULL)
+ * @param timeout       Ticks to wait for dispatch to begin
+ * @return              One of the ACTIVERT_POST_WAIT_* codes
+ */
+int activert_active_post_to_queue_wait(
+    activert_active_t* me, uint8_t queue_index, activert_event_t* event, TickType_t timeout
+);
+
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
 
 /*******************************************************************************
 * Notification Support

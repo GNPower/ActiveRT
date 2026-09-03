@@ -5,6 +5,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.2.0] - 2026-08-30
+
+### Added
+
+- `activert_active_set_enabled()` and `activert_active_is_enabled()` enable and disable an Active Object without destroying it. A disabled Active Object rejects posts with `-1`, so the caller keeps ownership of the event exactly as it does for a full queue, and an event that was already queued when the AO is disabled is freed without being dispatched. Enable/disable covers queue-event dispatch only. Notification handlers keep running, and `ACTIVERT_INIT_SIG` and `ACTIVERT_TERM_SIG` are unaffected because they are dispatched directly rather than through a queue. Loop tasks and notification-only Active Objects return `-1`, since they have no event dispatch to disable. Active Objects always start enabled.
+- `activert_active_post_wait()` and `activert_active_post_to_queue_wait()` post an event and block the calling task until the target Active Object's dispatch handler has returned for that event. The calling task blocks on a binary semaphore, so there is no busy wait and no heap allocation. Return codes are `ACTIVERT_POST_WAIT_OK`, `ACTIVERT_POST_WAIT_FAILED` (caller still owns the event), `ACTIVERT_POST_WAIT_TIMEOUT` (the event is still in flight, the Active Object will free it) and `ACTIVERT_POST_WAIT_DROPPED` (consumed without dispatch because the Active Object was disabled). The timeout bounds the wait for dispatch to begin but once the handler has started the call waits for it to return. There is no ISR variant. The call reports only that dispatch ran, never whether the handler succeeded.
+- `ACTIVERT_ENABLE_POST_WAIT` configuration macro, defaults to `1`. If enabled, it adds the post API and the completion pointer to `activert_event_t`. Setting it to `0` removes both and returns `activert_event_t` to its `1.1.0` size. When it is `1`, `INCLUDE_xTaskGetSchedulerState` and `INCLUDE_xTaskGetCurrentTaskHandle` must be `1` in `FreeRTOSConfig.h`.
+- `activert_enable(ao)` and `activert_disable(ao)` convenience aliases in `activert.h`, resolve to `activert_active_set_enabled((ao), true)` and `activert_active_set_enabled((ao), false)`.
+
+### Changed
+
+- `activert_active_post_to_queue()` and `activert_active_post_to_queue_from_isr()` clear the event's completion pointer before queueing. The pool allocator zeroes an event on allocation, but `ACTIVERT_POOL_OVERFLOW_DYNAMIC` does not zero its heap block and a caller-declared event need not be zeroed at all.
+- `docs/development/testing.md` lists the current test files and test count.
+- `docs/misra_deviations.md` now reports non-MISRA cppcheck suppressions.
+
+### Fixed
+
+- The MISRA-C check in `tools/misra/run_misra_check.py` fetched FreeRTOS `V11.1.0`, but `activert_config.h` has required `V11.2.0` since `1.1.0`. The check now fetches `V11.2.0`.
+- The MISRA harness rewrites `ACTIVERT_CLI_GET_TOKEN` to call `embeddedCliGetToken()` but never included that function's declaration. `test/platform_stubs/embedded_cli.h` is now included on the cppcheck command line.
+- The `cppcheck` CI job also fetched FreeRTOS `V11.1.0`, but `activert_config.h` has required `V11.2.0` since `1.1.0`. It now clones the FreeRTOS kernel headers at `V11.2.0` and adds `test/posix_config` and `test/platform_stubs` for `FreeRTOSConfig.h` and `portmacro.h`.
+- `docs/Doxyfile.in` did not predefine `ACTIVERT_ENABLE_POST_WAIT`, so Doxygen dropped everything inside the gate and the whole synchronous post API and completion types were missing from the generated API reference. The macro is now in `PREDEFINED` alongside the other feature gates.
+- `--suppress=preprocessorErrorDirective` was removed from both the `cppcheck` CI job and `tools/misra/run_misra_check.py`.
+
+---
+
 ## [1.1.0] - 2026-06-26
 
 ### Added

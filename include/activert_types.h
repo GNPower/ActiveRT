@@ -5,18 +5,19 @@
 *   @brief      Core Type Definitions
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    1.0.0
+*   @version    1.2.0
 *
 *   Revision History:
 *
 *   Ver     Who     Date        Changes
 *   -----   ----    ----------  -----------------------------------------------
 *   0.1.0   gnp     2025-11-01  Initial type definitions for event, pool, and AO
-*   0.2.0   gnp     2025-11-15  Packed bitmap pool; overflow policy enum
+*   0.2.0   gnp     2025-11-15  Packed bitmap pool, overflow policy enum
 *   0.4.0   gnp     2025-12-13  Multi-queue types, QueueSet handle, queue config
 *   0.5.0   gnp     2025-12-27  Statistics structs for AO and pool
-*   0.7.0   gnp     2026-01-24  Notification struct; notify handler typedef
-*   1.0.0   gnp     2026-02-28  is_static flag; static_mem tracking; loop_fn_t typedef
+*   0.7.0   gnp     2026-01-24  Notification struct, notify handler typedef
+*   1.0.0   gnp     2026-02-28  is_static flag, static_mem tracking; loop_fn_t typedef
+*   1.2.0   gnp     2026-08-30  enabled flag and completion block for synchronous posting
 *
 *******************************************************************************/
 
@@ -51,6 +52,41 @@ typedef activert_event_t** activert_queue_storage_t;
 typedef uint16_t activert_signal_t;
 
 /*******************************************************************************
+* Synchronous Post Completion
+*******************************************************************************/
+
+#if ACTIVERT_ENABLE_POST_WAIT
+
+/**
+ * Completion block state
+ *
+ * The Active Object moves the state out of PENDING in activert_completion_claim(), 
+ * which is called before dispatch.
+ */
+typedef enum
+{
+    ACTIVERT_COMPLETION_PENDING = 0, /**< Queued, the Active Object has not taken it yet */
+    ACTIVERT_COMPLETION_CLAIMED,     /**< The Active Object is dispatching it now */
+    ACTIVERT_COMPLETION_DONE,        /**< Dispatch returned */
+    ACTIVERT_COMPLETION_DISCARDED    /**< Consumed without dispatch (Active Object disabled) */
+} activert_completion_state_t;
+
+/**
+ * Completion block for a synchronous post
+ *
+ * Created on the posting task's stack by activert_active_post_wait() and valid
+ * only for the duration of that call. Never allocate one yourself.
+ */
+typedef struct
+{
+    SemaphoreHandle_t sem;                      /**< Given once the Active Object is done */
+    StaticSemaphore_t sem_buf;                  /**< Static storage for sem (no heap) */
+    volatile activert_completion_state_t state; /**< Claim / release handshake state */
+} activert_completion_t;
+
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
+
+/*******************************************************************************
 * Event Structure
 *******************************************************************************/
 
@@ -63,6 +99,10 @@ struct activert_event
 {
     activert_signal_t sig;       /**< Event signal */
     activert_event_pool_t* pool; /**< Owning pool (NULL if malloc'd) */
+#if ACTIVERT_ENABLE_POST_WAIT
+    activert_completion_t* completion; /**< Waiter to signal, NULL for a plain post.
+                                            Set by the post functions, never by the user. */
+#endif
 };
 
 /*******************************************************************************
@@ -271,6 +311,9 @@ struct activert_active
     activert_dispatch_handler_t dispatch; /**< Event dispatch handler */
     activert_loop_fn_t loop_fn;           /**< Loop function (NULL for queue/notify tasks) */
     activert_notification_t notification; /**< Notification handler info */
+
+    /* Event dispatch boolean (see activert_active_set_enabled) */
+    bool enabled; /**< False stops event dispatch only, notifications keep running */
 
     /* Static memory tracking */
     bool is_static;                   /**< True if created with static allocation */
