@@ -24,6 +24,9 @@ activert_active_post(my_ao, &evt->base);
 to ActiveRT. It will be freed back to the pool automatically after the
 dispatch handler returns. Never read or write the event after posting.
 
+`activert_active_post` returns as soon as the event is queued, if you need 
+to wait for the handler to finish, see [Synchronous Posting](synchronous_posting).
+
 ---
 
 ## ISR-Safe Posting

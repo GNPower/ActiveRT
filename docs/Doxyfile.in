@@ -45,6 +45,7 @@ PREDEFINED             = ACTIVERT_ENABLE_STATS=1 \
                          ACTIVERT_ENABLE_NAMES=1 \
                          ACTIVERT_ENABLE_DEBUG=0 \
                          ACTIVERT_ENABLE_DYNAMIC_ALLOCATION=1 \
+                         ACTIVERT_ENABLE_POST_WAIT=1 \
                          "ACTIVERT_ASSERT(x)=" \
                          "__attribute__(x)="
 

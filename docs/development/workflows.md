@@ -1,7 +1,9 @@
 # CI/CD Workflows
 
-ActiveRT uses three GitHub Actions workflows plus a release workflow.
-All workflows are defined in [`.github/workflows/`](../../.github/workflows/).
+ActiveRT uses three GitHub Actions workflows: build and test, static
+analysis, and release. All are defined in `.github/workflows/`.
+Documentation is not built by Actions, Read the Docs builds it directly
+from the repository.
 
 ---
 
@@ -14,7 +16,7 @@ Runs on `ubuntu-latest`:
 1. Install Ninja and CMake
 2. `cmake --preset host-test` - configure (fetches FreeRTOS V11.2.0 and Unity v2.5.2)
 3. `cmake --build --preset host-test` - compile all sources and test executables
-4. `ctest --preset host-test` - run all three test suites
+4. `ctest --preset host-test` - run all ten test executables
 
 A failure at any step marks the workflow as failed and blocks the PR.
 
@@ -24,7 +26,7 @@ A failure at any step marks the workflow as failed and blocks the PR.
 
 **Trigger:** push or pull request to `main` or `dev`
 
-Three parallel jobs:
+Four parallel jobs:
 
 ### clang-format
 
@@ -33,11 +35,30 @@ action. Checks all `.c` and `.h` files in `src/` and `include/` against
 the project's `.clang-format` rules. Any reformatting needed causes
 the job to fail.
 
-### cppcheck / MISRA-C
+### cppcheck
 
-Installs cppcheck and runs `tools/misra/run_misra_check.py`. The script
-invokes cppcheck with MISRA-C 2012 add-on enabled. All active
-suppressions are listed in `docs/misra_deviations.md` with rationale.
+Clones the FreeRTOS kernel headers at V11.2.0, then runs cppcheck over
+`src/` with `include/`, the kernel headers, `test/posix_config`, and
+`test/platform_stubs` on the include path.
+
+The kernel headers are not optional. `activert_config.h` raises `#error`
+below FreeRTOS 11.2.0, and `FreeRTOS.h` pulls in `FreeRTOSConfig.h` and
+`portmacro.h`. For the same reason `preprocessorErrorDirective` is 
+deliberately not suppressed, so a broken include path fails the job.
+
+### MISRA-C
+
+Runs `tools/misra/run_misra_check.py`, which invokes cppcheck with the
+MISRA-C 2012 addon. The script fetches the kernel itself with
+`--fetch-freertos`, at the same V11.2.0 the tests use. `misra_rules.txt`
+is copyrighted and not committed.
+
+All active suppressions are listed in `docs/misra_deviations.md` with
+rationale. The check fails on any Mandatory violation.
+
+The FreeRTOS version is pinned in three places:
+`test/CMakeLists.txt`, `tools/misra/run_misra_check.py`, and the cppcheck
+job in `static-analysis.yml`.
 
 ### clang-tidy
 
@@ -47,19 +68,36 @@ suppressions are listed in `docs/misra_deviations.md` with rationale.
 
 ---
 
-## `docs.yml` - Documentation
+## Documentation
 
-**Trigger:** push to `main` or `dev` (when `include/`, `src/`, or `docs/`
-change); also triggerable manually from the Actions tab.
+Documentation is built by [Read the Docs](https://activert.readthedocs.io),
+there is no documentation workflow in `.github/workflows/`.
 
-1. Install `doxygen`, `graphviz`, `cmake`, `ninja`
-2. Install Python dependencies: `pip install -r requirements.txt`
-3. `cmake --preset docs` — configure docs-only build
-4. `cmake --build --preset docs` — run Doxygen + Sphinx
-5. Deploy `build/docs/html/` to the `gh-pages` branch via
-   [`peaceiris/actions-gh-pages`](https://github.com/peaceiris/actions-gh-pages)
+Read the Docs is driven by [`.readthedocs.yaml`](../../.readthedocs.yaml):
+it installs `doxygen` from apt, installs `docs/requirements.txt`, then runs
+Sphinx against `docs/conf.py`. `conf.py` invokes Doxygen itself when
+`DOXYGEN_XML_DIR` is unset, which is the case on Read the Docs, so Breathe
+has the XML it needs. `fail_on_warning` is `false`, so a Sphinx warning
+does not fail the build.
 
-The published site is available at the repository's GitHub Pages URL.
+Which branches and tags get built is configured in the Read the Docs
+dashboard, not in the repository:
+
+| Version | Source |
+| --- | --- |
+| `latest` | The default branch, `main`. Rebuilt automatically when a push lands there |
+| `stable` | The highest activated semantic-version tag |
+| `vX.Y.Z` | Created when the tag is pushed, but only built once activated under Versions in the dashboard |
+
+The README badge tracks `latest`.
+
+To build the same output locally, create the virtual environment described
+in the README's Documentation section, then:
+
+```bash
+python tools/build_docs.py --open
+python -m http.server 8000 --directory build/docs/html
+```
 
 ---
 
@@ -73,19 +111,31 @@ The published site is available at the repository's GitHub Pages URL.
 4. Pre-release flag is set automatically for tags containing `-`
    (e.g. `v1.1.0-rc1`)
 
-### Cutting a release
+### Making a release
 
-After merging the release PR to `main`:
+Releases PR from a feature branch to `dev` to `main`, and the tag is pushed
+only after the merge into `main` has completed. Tagging earlier would
+publish a GitHub Release pointing at a commit that is not yet on `main`.
+
+1. Commit the release on a feature branch, for example `feature/v1.2.0`.
+   It must include the version bump in `VERSION` and in the three
+   `ACTIVERT_VERSION_*` macros in `include/activert.h`, plus a matching
+   `## [X.Y.Z]` section in `CHANGELOG.md` and an entry in
+   `docs/changelog.rst`.
+2. Open a pull request against `dev`. CI and static analysis must pass.
+3. Open a pull request from `dev` against `main` and merge it. This is
+   what triggers the Read the Docs build of `latest`.
+4. Only now, tag `main`:
 
 ```bash
 git checkout main
 git pull
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-The release workflow creates the GitHub Release automatically within
-about 30 seconds.
+The release workflow creates the GitHub Release automatically, using 
+the `CHANGELOG.md` section for that version as the release body.
 
 ---
 
@@ -93,6 +143,6 @@ about 30 seconds.
 
 | Branch | Purpose |
 | --- | --- |
-| `main` | Stable releases — all workflows run; releases cut from here |
-| `dev` | Integration branch — CI and static analysis run; docs deployed |
-| Feature branches | Individual changes — opened as PRs against `dev` |
+| `main` | Stable releases, all workflows run and releases made from here |
+| `dev` | Integration branch. CI and static analysis run. No documentation is published from here |
+| Feature branches | Individual changes opened as PRs against `dev` |

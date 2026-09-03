@@ -5,7 +5,7 @@
 *   @brief      Configuration and Platform Abstraction Layer
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    1.0.0
+*   @version    1.2.0
 *
 *   Revision History:
 *
@@ -15,7 +15,8 @@
 *   0.2.0   gnp     2025-11-15  Overflow policy definitions
 *   0.5.0   gnp     2025-12-27  Statistics configuration macros
 *   0.6.0   gnp     2026-01-10  CLI macros (ACTIVERT_CLI_PRINTF, ACTIVERT_CLI_GET_TOKEN)
-*   1.0.0   gnp     2026-02-28  FreeRTOS version compat; ACTIVERT_ENABLE_CLI; stdio.h fix
+*   1.0.0   gnp     2026-02-28  FreeRTOS version compatibility, ACTIVERT_ENABLE_CLI, stdio.h fix
+*   1.2.0   gnp     2026-08-30  ACTIVERT_ENABLE_POST_WAIT feature gate
 *
 *******************************************************************************/
 
@@ -68,15 +69,25 @@
 
 /**
  * Enable dynamic allocation API (activert_active_create, activert_active_destroy).
- * Disabled by default — embedded targets typically use static allocation only.
+ * Disabled by default as embedded targets typically use static allocation only.
  */
 #ifndef ACTIVERT_ENABLE_DYNAMIC_ALLOCATION
     #define ACTIVERT_ENABLE_DYNAMIC_ALLOCATION 0
 #endif
 
 /**
+ * Enable the synchronous post API (activert_active_post_wait).
+ *
+ * Adds one pointer to every activert_event_t. Set to 0 to remove the API and
+ * return activert_event_t to its 1.1.0 size.
+ */
+#ifndef ACTIVERT_ENABLE_POST_WAIT
+    #define ACTIVERT_ENABLE_POST_WAIT 1
+#endif
+
+/**
  * Enable runtime warning when an event pool is exhausted.
- * Disabled by default — production builds should handle exhaustion silently.
+ * Disabled by default as production builds should handle exhaustion silently.
  */
 #ifndef ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION
     #define ACTIVERT_ENABLE_POOL_OVERFLOW_DETECTION 0
@@ -184,7 +195,7 @@
 #endif
 
 /* CLI token extraction - maps to the host CLI system's argument parser.
- * When ACTIVERT_ENABLE_CLI=1 this MUST be overridden; a build error is
+ * When ACTIVERT_ENABLE_CLI=1 this MUST be overridden, a build error is
  * issued if it is not.  When ACTIVERT_ENABLE_CLI=0 it defaults to NULL
  * (CLI commands that require arguments will print their usage string). */
 #ifndef ACTIVERT_CLI_GET_TOKEN
@@ -208,5 +219,28 @@
     (tskKERNEL_VERSION_MAJOR == 11 && tskKERNEL_VERSION_MINOR < 2)
     #error "ActiveRT requires FreeRTOS 11.2.0 or later. Please upgrade your FreeRTOS version."
 #endif
+
+/*
+ * activert_active_post_wait needs to detect a post made before the scheduler
+ * starts and a post from the target's own task, because neither posts are 
+ * allowed. Both checks call a kernel API that FreeRTOS compiles in only
+ * under the conditions below (tasks.c).
+ */
+#if ACTIVERT_ENABLE_POST_WAIT
+
+    #if !((INCLUDE_xTaskGetSchedulerState == 1) || (configUSE_TIMERS == 1))
+        #error "ACTIVERT_ENABLE_POST_WAIT=1 needs xTaskGetSchedulerState: set " \
+       "INCLUDE_xTaskGetSchedulerState (or configUSE_TIMERS) to 1 in FreeRTOSConfig.h."
+    #endif
+
+    #if !(                                                                                \
+        (INCLUDE_xTaskGetCurrentTaskHandle == 1) || (configUSE_RECURSIVE_MUTEXES == 1) || \
+        (configNUMBER_OF_CORES > 1)                                                       \
+    )
+        #error "ACTIVERT_ENABLE_POST_WAIT=1 needs xTaskGetCurrentTaskHandle: set " \
+       "INCLUDE_xTaskGetCurrentTaskHandle to 1 in FreeRTOSConfig.h."
+    #endif
+
+#endif /* ACTIVERT_ENABLE_POST_WAIT */
 
 #endif /* ACTIVERT_CONFIG_H */

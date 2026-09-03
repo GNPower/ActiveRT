@@ -28,6 +28,8 @@ Detailed documentation can be found at [ReadTheDocs](https://activert.readthedoc
 | **Statistics** | Per-component counters, peak usage, processing time, health checks |
 | **CLI layer** | Runtime diagnostics via any embedded CLI system |
 | **ISR-safe APIs** | `_from_isr` variants for all post/free/notify operations |
+| **Enable / disable** | Take an Active Object out of service without destroying it |
+| **Synchronous posting** | `activert_active_post_wait` blocks the caller until the handler returns |
 | **FreeRTOS 11** | Compatible with FreeRTOS 11.2+ |
 
 ---
@@ -142,11 +144,28 @@ ctest --preset host-test
 
 ### Documentation
 
+Requires `doxygen` on PATH. Preferably use a virtual environment
+for Python requirements:
+
 ```bash
+python -m venv env
+env/Scripts/activate        # Linux/macOS: source env/bin/activate
 pip install -r requirements.txt
+python tools/build_docs.py --open
+```
+
+Output is in `build/docs/html/`. To review it over HTTP instead of 
+`file://` run:
+
+```bash
+python -m http.server 8000 --directory build/docs/html
+```
+
+The CMake route below does the same thing but needs Ninja:
+
+```bash
 cmake --preset docs
 cmake --build --preset docs
-# Open build/docs/html/index.html
 ```
 
 ### Static analysis (local)
@@ -156,9 +175,14 @@ cmake --build --preset docs
 find src include -name "*.c" -o -name "*.h" | \
     xargs clang-format --dry-run -Werror
 
-# cppcheck
+# cppcheck (needs the FreeRTOS headers, or every file aborts in
+# preprocessing on the 11.2.0 version check in activert_config.h)
+git clone --depth=1 --branch V11.2.0 \
+    https://github.com/FreeRTOS/FreeRTOS-Kernel.git build/freertos-kernel
 cppcheck --enable=warning,style,performance,portability \
-         --std=c11 --inline-suppr -I include/ src/
+         --std=c11 --inline-suppr \
+         -I include/ -I build/freertos-kernel/include \
+         -I test/posix_config -I test/platform_stubs src/
 
 # clang-tidy (requires cmake --preset host-test first)
 find src -name "*.c" | xargs clang-tidy -p build/host-test
@@ -176,6 +200,7 @@ Key options in `include/activert_config.h`:
 | `ACTIVERT_ENABLE_TIMING_STATS` | `1` | Per-event processing time tracking |
 | `ACTIVERT_ENABLE_NAMES` | `1` | Named AOs and pools for debugging |
 | `ACTIVERT_ENABLE_DEBUG` | `0` | Verbose debug printf output |
+| `ACTIVERT_ENABLE_POST_WAIT` | `1` | Synchronous `activert_active_post_wait` |
 | `ACTIVERT_ENABLE_CLI` | `0` | CLI command layer (requires `ACTIVERT_CLI_GET_TOKEN` override) |
 | `ACTIVERT_MAX_QUEUES` | `8` | Max queues per Active Object |
 | `ACTIVERT_MAX_REGISTERED_ACTIVES` | `32` | Global AO registry capacity |
@@ -185,7 +210,7 @@ Key options in `include/activert_config.h`:
 
 ## Additional Resources
 
-Full API reference is published at the project's GitHub Pages site.
+Full API reference is published at [activert.readthedocs.io](https://activert.readthedocs.io).
 
 - [CHANGELOG.md](CHANGELOG.md)
 

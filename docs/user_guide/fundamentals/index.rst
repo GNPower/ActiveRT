@@ -11,3 +11,5 @@ Fundamentals and Usage
    helper_macros
    static_vs_dynamic
    posting
+   synchronous_posting
+   enable_disable

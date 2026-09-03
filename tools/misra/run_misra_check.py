@@ -154,19 +154,19 @@ class MisraChecker:
         return None
 
     def fetch_freertos(self) -> Path:
-        """Clone FreeRTOS kernel V11.1.0 to build/freertos-kernel/ (shallow clone)."""
+        """Clone FreeRTOS kernel V11.2.0 to build/freertos-kernel/ (shallow clone)."""
         freertos_dir = self.build_dir / "freertos-kernel"
         if freertos_dir.exists():
             print(f"[*] FreeRTOS already present at: {freertos_dir}")
             return freertos_dir
 
-        print("[*] Fetching FreeRTOS kernel V11.1.0...")
+        print("[*] Fetching FreeRTOS kernel V11.2.0...")
         self.build_dir.mkdir(parents=True, exist_ok=True)
         subprocess.run(
             [
                 "git", "clone",
                 "--depth=1",
-                "--branch", "V11.1.0",
+                "--branch", "V11.2.0",
                 "https://github.com/FreeRTOS/FreeRTOS-Kernel.git",
                 str(freertos_dir),
             ],
@@ -193,7 +193,6 @@ class MisraChecker:
             f"--output-file={self.report_dir / 'misra_cppcheck.xml'}",
             "--suppress=missingInclude",
             "--suppress=missingIncludeSystem",
-            "--suppress=preprocessorErrorDirective",
             "--suppress=normalCheckLevelMaxBranches",
             "--suppress=misra-c2012-2.5",
             "--suppress=misra-c2012-8.7",
@@ -240,6 +239,12 @@ class MisraChecker:
         cmd.append("-I" + str(freertos_root / "include"))
         for stub in stub_dirs:
             cmd.append("-I" + str(stub))
+
+        # The ACTIVERT_CLI_GET_TOKEN override above rewrites the macro to a call
+        # to embeddedCliGetToken(), so it must be included.
+        cmd.append(
+            "--include=" + str(self.source_dir / "test" / "platform_stubs" / "embedded_cli.h")
+        )
 
         # Suppress MISRA violations from all non-project directories.
         # freertos_root covers include/ and all portable/ subdirectories.
@@ -504,7 +509,7 @@ def main():
     parser.add_argument("--strict", action="store_true",
                        help="Fail on any violation (including advisory)")
     parser.add_argument("--fetch-freertos", action="store_true",
-                       help="Clone FreeRTOS kernel V11.1.0 to build/freertos-kernel/ "
+                       help="Clone FreeRTOS kernel V11.2.0 to build/freertos-kernel/ "
                             "before analysis (enables full Rule 17.3 checking)")
 
     args = parser.parse_args()
