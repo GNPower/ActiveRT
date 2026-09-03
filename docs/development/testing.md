@@ -2,8 +2,9 @@
 
 ActiveRT uses a two-layer test strategy:
 
-- **Host unit tests** - run on Linux via the FreeRTOS POSIX simulator;
-  exercised in CI on every push.
+- **Host unit tests** - run on a host FreeRTOS simulator port: `GCC_POSIX` 
+  on Linux and macOS, `MSVC_MINGW` on Windows. Both platforms are tested 
+  in CI on every push.
 - **Static analysis** - clang-format, clang-tidy, and cppcheck / MISRA-C
   checks; also run in CI on every push.
 
@@ -11,8 +12,7 @@ ActiveRT uses a two-layer test strategy:
 
 ## Running Host Unit Tests
 
-The host tests require a Linux environment (the FreeRTOS POSIX port uses
-pthreads). On Ubuntu/Debian:
+On Ubuntu/Debian:
 
 ```bash
 sudo apt-get install -y cmake ninja-build
@@ -22,14 +22,29 @@ cmake --build --preset host-test
 ctest --preset host-test --output-on-failure
 ```
 
+On Windows:
+
+```bash
+cmake --preset windows-test
+cmake --build --preset windows-test
+ctest --preset windows-test --output-on-failure
+```
+
 Expected output:
 
 ```text
-Test #1: test_event_pool    ... Passed
-Test #2: test_active_basic  ... Passed
-Test #3: test_stats_registry ... Passed
+Test  #1: test_event_pool ................ Passed
+Test  #2: test_active_basic .............. Passed
+Test  #3: test_stats_registry ............ Passed
+Test  #4: test_enable_disable ............ Passed
+Test  #5: test_post_wait ................. Passed
+Test  #6: test_event_pool_no_post_wait ... Passed
+Test  #7: test_regression_core ........... Passed
+Test  #8: test_regression_lifecycle ...... Passed
+Test  #9: test_dynamic_paths ............. Passed
+Test #10: test_integration_stress ........ Passed
 
-100% tests passed, 0 tests failed out of 3
+100% tests passed, 0 tests failed out of 10
 ```
 
 ---
@@ -59,12 +74,22 @@ test/
 │   └── freertos_test_main.c   - shared scheduler + Unity entry point
 ├── posix_config/
 │   └── FreeRTOSConfig.h       - FreeRTOS config for the POSIX port
+├── windows_config/
+│   └── FreeRTOSConfig.h       - FreeRTOS config for the Windows port
 ├── platform_stubs/
-│   └── embedded_cli.h         - stub for MISRA analysis only
-└── unit/
-    ├── test_event_pool.c
-    ├── test_active_basic.c
-    └── test_stats_registry.c
+│   ├── embedded_cli.h         - stub for MISRA analysis only
+│   └── portmacro.h            - stub for MISRA analysis only
+├── unit/
+│   ├── test_event_pool.c
+│   ├── test_active_basic.c
+│   ├── test_stats_registry.c
+│   ├── test_enable_disable.c
+│   ├── test_post_wait.c
+│   ├── test_regression_core.c
+│   ├── test_regression_lifecycle.c
+│   └── test_dynamic_paths.c
+└── integration/
+    └── test_integration_stress.c
 ```
 
 ---

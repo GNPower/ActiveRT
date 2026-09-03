@@ -5,7 +5,7 @@
 *   @brief      Master include — single header for all ActiveRT functionality
 *   @author     Graham N. Power
 *   @date       2025-11-01
-*   @version    1.0.0
+*   @version    1.2.0
 *
 *   Include this file to access all ActiveRT APIs. Includes are ordered by
 *   dependency: configuration, types, event pool, active object. Optional
@@ -19,7 +19,8 @@
 *   0.4.0   gnp     2025-12-13  Added activert_queue.h
 *   0.5.0   gnp     2025-12-27  Added activert_stats.h
 *   0.6.0   gnp     2026-01-10  Added activert_cli.h (guarded by ACTIVERT_ENABLE_CLI)
-*   1.0.0   gnp     2026-02-28  Version macros; convenience aliases; quick-reference patterns
+*   1.0.0   gnp     2026-02-28  Version macros, convenience aliases, quick-reference patterns
+*   1.2.0   gnp     2026-08-30  activert_enable/activert_disable aliases
 *
 *******************************************************************************/
 
@@ -36,10 +37,10 @@ extern "C"
 *******************************************************************************/
 
 #define ACTIVERT_VERSION_MAJOR 1
-#define ACTIVERT_VERSION_MINOR 1
+#define ACTIVERT_VERSION_MINOR 2
 #define ACTIVERT_VERSION_PATCH 0
 
-#define ACTIVERT_VERSION_STRING "1.1.0"
+#define ACTIVERT_VERSION_STRING "1.2.0"
 
 /*******************************************************************************
 * Core Includes (Order matters - dependencies)
@@ -92,6 +93,8 @@ extern "C"
 #define activert_post_isr(ao, evt, wake)    activert_active_post_from_isr((ao), (evt), (wake))
 #define activert_notify(ao, bits)           activert_active_notify((ao), (bits))
 #define activert_notify_isr(ao, bits, wake) activert_active_notify_from_isr((ao), (bits), (wake))
+#define activert_enable(ao)                 activert_active_set_enabled((ao), true)
+#define activert_disable(ao)                activert_active_set_enabled((ao), false)
 
     /*******************************************************************************
 * Quick Reference - Common Patterns

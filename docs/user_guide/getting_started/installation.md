@@ -79,5 +79,5 @@ cmake --build --preset host-test
 ctest --preset host-test --output-on-failure
 ```
 
-All three test suites should pass. See the
-[Testing](../development/testing) page for details.
+All tests should pass. See the
+[Testing](../../development/testing.md) page for details.
