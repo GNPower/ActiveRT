@@ -55,8 +55,6 @@ Deviations fall into two categories:
 
 ---
 
----
-
 ## Global Deviations
 
 ### Rule 11.5 - Cast from `void*` to a pointer-to-object type

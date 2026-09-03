@@ -18,6 +18,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `activert_active_post_to_queue()` and `activert_active_post_to_queue_from_isr()` clear the event's completion pointer before queueing. The pool allocator zeroes an event on allocation, but `ACTIVERT_POOL_OVERFLOW_DYNAMIC` does not zero its heap block and a caller-declared event need not be zeroed at all.
 - `docs/development/testing.md` lists the current test files and test count.
+- `docs/development/workflows.md` documented a `docs.yml` workflow that was deleted when the project moved to Read the Docs, including a gh-pages deploy that no longer happens. It now describes the Read the Docs setup.
+- `README.md` pointed the API reference at GitHub Pages instead of Read the Docs. Its documentation build instructions now cover the virtual environment and `tools/build_docs.py`, which works without Ninja, and its local cppcheck command now passes the FreeRTOS headers it needs to analyse anything.
 - `docs/misra_deviations.md` now reports non-MISRA cppcheck suppressions.
 
 ### Fixed
@@ -26,7 +28,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The MISRA harness rewrites `ACTIVERT_CLI_GET_TOKEN` to call `embeddedCliGetToken()` but never included that function's declaration. `test/platform_stubs/embedded_cli.h` is now included on the cppcheck command line.
 - The `cppcheck` CI job also fetched FreeRTOS `V11.1.0`, but `activert_config.h` has required `V11.2.0` since `1.1.0`. It now clones the FreeRTOS kernel headers at `V11.2.0` and adds `test/posix_config` and `test/platform_stubs` for `FreeRTOSConfig.h` and `portmacro.h`.
 - `docs/Doxyfile.in` did not predefine `ACTIVERT_ENABLE_POST_WAIT`, so Doxygen dropped everything inside the gate and the whole synchronous post API and completion types were missing from the generated API reference. The macro is now in `PREDEFINED` alongside the other feature gates.
-- `--suppress=preprocessorErrorDirective` was removed from both the `cppcheck` CI job and `tools/misra/run_misra_check.py`.
+- Three documentation defects that made Sphinx emit warnings.
 
 ---
 

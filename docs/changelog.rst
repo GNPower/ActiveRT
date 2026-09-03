@@ -12,6 +12,8 @@ v1.2.0 (2026-08-30)
 - New user guide pages: Enabling and Disabling Active Objects, Synchronous Posting
 - Fixed: the MISRA-C check fetched FreeRTOS V11.1.0 while ``activert_config.h`` requires 11.2.0 and the resulting ``#error`` was suppressed. The test script now fetches V11.2.0
 - Fixed: the MISRA tests rewrites ``ACTIVERT_CLI_GET_TOKEN`` to a call whose declaration was never included, reporting Mandatory Rule 17.3 on every CLI command. The analysis file is now included
+- Documentation: ``workflows.md`` described a deleted ``docs.yml`` workflow and a gh-pages deploy. It now covers Read the Docs and the real release sequence. The README no longer points the API 
+  reference at GitHub Pages, and its docs build instructions cover the virtual environment
 - Fixed: ``docs/Doxyfile.in`` did not predefine ``ACTIVERT_ENABLE_POST_WAIT``, so the entire synchronous post API was absent from the generated API reference
 - Fixed: the ``cppcheck`` CI job passed no FreeRTOS include path. It now fetches the V11.2.0 kernel headers, and ``preprocessorErrorDirective`` is no longer suppressed
 
@@ -24,8 +26,8 @@ v1.1.0 (2026-06-26)
 - Regression, dynamic-allocation-path, and multi-Active-Object stress tests
 - Event pool thread-safety moved from a mutex to interrupt-masking critical sections, so task and ISR pool operations mutually exclude
 - Fixes: pool corruption across task and ISR context, NULL queue dereference in notification-only Active Objects, undersized notification queue-set storage, 
-unallocated queue array in dynamic creation, dangling statistics-registry entries after destroy, double free of a pool event, duplicate registry entries on 
-re-init, leaked ``ACTIVERT_POOL_OVERFLOW_DYNAMIC`` events, health-check thresholds in bytes, and runtime bounds checks on ``activert_active_post_to_queue``
+  unallocated queue array in dynamic creation, dangling statistics-registry entries after destroy, double free of a pool event, duplicate registry entries on 
+  re-init, leaked ``ACTIVERT_POOL_OVERFLOW_DYNAMIC`` events, health-check thresholds in bytes, and runtime bounds checks on ``activert_active_post_to_queue``
 
 v1.0.0 (2026-02-28)
 --------------------
