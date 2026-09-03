@@ -233,7 +233,8 @@ void test_disabled_ao_still_runs_notification_handler(void)
     s_notify_dispatch_count = 0;
 
     activert_queue_config_t cfg = {
-        .signal_base = 0, .signal_count = 0, .queue_length = ED_NQ, .event_pool = ed_pool};
+        .signal_base = 0, .signal_count = 0, .queue_length = ED_NQ, .event_pool = ed_pool
+    };
     activert_event_t** qsa[1] = {ed_n_qstore};
 
     activert_active_t* ao = activert_active_create_with_notification_static(

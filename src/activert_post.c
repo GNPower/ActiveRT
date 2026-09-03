@@ -177,7 +177,7 @@ int activert_active_post_to_queue(
     ACTIVERT_ASSERT(me != NULL);
     ACTIVERT_ASSERT(event != NULL);
 
-#if ACTIVERT_ENABLE_POST_WAIT    
+#if ACTIVERT_ENABLE_POST_WAIT
     event->completion = NULL;
 #endif /* ACTIVERT_ENABLE_POST_WAIT */
 
@@ -233,7 +233,7 @@ int activert_active_post_to_queue_from_isr(
         return -1;
     }
 
-    // A disabled Active Object accepts nothing, even from an ISR. 
+    // A disabled Active Object accepts nothing, even from an ISR.
     if (!me->enabled)
     {
 #if ACTIVERT_ENABLE_STATS
@@ -356,7 +356,7 @@ static int post_wait_common(
     // dispatch the event before this function reaches the wait below.
     //
     // cppcheck flags storing the address of a local into a longer-lived object.
-    // But here, either the Active Object claims the block, or the timeout path 
+    // But here, either the Active Object claims the block, or the timeout path
     // removes it under a critical section.
     // See the invariants in src/activert_internal.h.
     // cppcheck-suppress autoVariables
@@ -421,7 +421,7 @@ int activert_active_post_wait(activert_active_t* me, activert_event_t* event, Ti
         me->stats.events_dropped++;
     #endif /* ACTIVERT_ENABLE_STATS */
 
-        return ACTIVERT_POST_WAIT_FAILED; // No queue handles this signal
+        return ACTIVERT_POST_WAIT_FAILED;  // No queue handles this signal
     }
 
     return post_wait_common(me, (uint8_t)queue_idx, event, timeout);
